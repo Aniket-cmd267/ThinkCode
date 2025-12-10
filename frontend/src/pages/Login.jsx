@@ -1,6 +1,7 @@
 import {useForm} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod' 
 import z from "zod"
+import {Link} from 'react-router'
 
 const loginSchema= z.object({
     email: z.email(),
@@ -37,6 +38,11 @@ function Login(){
                         <div className='flex justify-center mt-4'>
                             <button type="submit" className='btn btn-primary py-1 px-5'>Sign Up</button>
                         </div>   
+                        <div>
+                            <Link to="/signup">
+                                <p>Don't have an account SignUp</p>
+                            </Link>
+                        </div>
                     </form>
                 </div>
             </div>

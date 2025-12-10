@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod';
-
+import {Link} from 'react-router'
 // schema Validation for signup form
 const signupSchema= z.object({
     firstName: z.string().min(3, "Name must contain atleast contain 3 characters"),
     email: z.email("Invalid Email"),
-    password: z.string().min(8,"Password must contain atleast 8 characters")
+    password: z.string().min(8,"Password must contain atleast 8 characters").regex(/[!@#$%^&*(),.?":{}|<>]/,"Password must contain atleast one special character")
 })
 
 //  errors= {
@@ -15,6 +15,7 @@ const signupSchema= z.object({
             // message: ""
     // }
 // }
+
 function Signup(){
     const {
                 register,
@@ -53,6 +54,11 @@ function Signup(){
                         </div>
                         <div className='flex justify-center mt-4'>
                             <button type="submit" className='btn btn-primary py-1 px-5'>Sign Up</button>
+                        </div>
+                        <div>
+                            <Link to="/login">
+                                <p>Already have an account Login</p>
+                            </Link>
                         </div>
                     </form>
                 </div>
