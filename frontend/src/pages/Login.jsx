@@ -2,6 +2,9 @@ import {useForm} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod' 
 import z from "zod"
 import {Link} from 'react-router'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 
 const loginSchema= z.object({
     email: z.email(),
@@ -9,11 +12,19 @@ const loginSchema= z.object({
 })
 
 function Login(){
-    
+    const dispatch= useDispatch();
+    const navigate= useNavigate();
     const { register, handleSubmit, formState: {errors}}= useForm({resolver: zodResolver(loginSchema)});
     const submitHandler= (data)=>{
-        console.log(data)
+        dispatch(loginUser(data))
     }
+
+    const {isAuthenticated, loading, error} = useSelector((state) => state.slice1)
+    useEffect(() =>{
+        if(isAuthenticated){
+            navigate('/');
+        }
+    },[isAuthenticated]);
     return (
         <div className='flex justify-center items-center p-4 min-h-screen'>
             <div className='card w-96 shadow-xl bg-base-100'>

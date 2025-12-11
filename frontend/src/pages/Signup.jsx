@@ -1,7 +1,11 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod';
-import {Link} from 'react-router'
+import {Link, useNavigate} from 'react-router'
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { registerUser } from '../store/authSlice';
+
 // schema Validation for signup form
 const signupSchema= z.object({
     firstName: z.string().min(3, "Name must contain atleast contain 3 characters"),
@@ -13,10 +17,13 @@ const signupSchema= z.object({
 //     firstName : {
             // type: min,
             // message: ""
-    // }
+    // }, 
+    // email : {} ,
 // }
 
 function Signup(){
+    const navigate= useNavigate();
+    const dispatch= useDispatch();
     const {
                 register,
                 handleSubmit,
@@ -24,8 +31,17 @@ function Signup(){
     } = useForm({resolver: zodResolver(signupSchema)});
     
     const submitHandler = (data) => {
-        console.log(data);
+        dispatch(registerUser(data));
     }
+
+    
+    const {loading, isAuthenticated, error}= useSelector((state) => state.slice1)
+    useEffect(() =>{
+        if(isAuthenticated){
+            navigate('/')
+        }
+    },[isAuthenticated]);
+    
     return (
         <div className='flex justify-center items-center min-h-screen p-4'>
             <div className='card w-96 shadow-xl bg-base-100'>

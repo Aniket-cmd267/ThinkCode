@@ -1,4 +1,4 @@
-import {createSlice, createAsyncThunk} from 'react-redux'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import axiosClient from '../utils/axiosClient'
 
 // createAsyncThunk has three case --> pending / fulfilled/ rejected and we have to handle all of that (similar to promise)
@@ -7,10 +7,13 @@ const registerUser= createAsyncThunk(
     async (userData, {rejectWithValue}) => { // {rejectWithValue} this comes from thuunkAPI extra features 
         // userData is coming when dispatch triggers the createasyncthunk conatining the data when user click on login
         try{
+            console.log(userData);
+            console.log('Thunk running')
             const response= await axiosClient.post('/user/register', userData); // creating and sending the data
+            console.log('Thunk passed') 
             return response.data.user; // data is a object contain (user, message) as keys
         }catch(error){
-            return rejectWithValue(error);
+            return rejectWithValue(error.response.data);
         }
     }
 )
@@ -22,7 +25,7 @@ const loginUser= createAsyncThunk(
             const response= await axiosClient.post('/user/login', userData);
             return response.data.user;  
         }catch(error){
-            return rejectWithValue(error)
+            return rejectWithValue(error.response.data)
         }
     }
 )
@@ -33,7 +36,7 @@ const authCheck= createAsyncThunk(
             const {data}= await axiosClient.get('/user/check');
             return data.user;  
         }catch(error){
-            return rejectWithValue(error)
+            return rejectWithValue(error.response.data)
         }
     }
 )
@@ -44,7 +47,7 @@ const logoutUser= createAsyncThunk(
             await axiosClient.post('/logout');
             return null;  
         }catch(error){
-            return rejectWithValue(error)
+            return rejectWithValue(error.response.data)
         }
     }
 )
@@ -87,7 +90,7 @@ const authSlice= createSlice({
             state.isAuthenticated= !!action.payload
             state.user= action.payload
         })
-        .addCase(registerUser.rejected, (state,action) =>{
+        .addCase(loginUser.rejected, (state,action) =>{
             state.loading= false,
             state.error= action.payload?.message || "Something went wrong",
             state.isAuthenticated= false
@@ -123,7 +126,7 @@ const authSlice= createSlice({
             state.isAuthenticated= false
             state.user= null
         })
-        .addCase(registerUser.rejected, (state,action) =>{
+        .addCase(logoutUser.rejected, (state,action) =>{
             state.loading= false,
             state.error= action.payload?.message || "Something went wrong",
             state.isAuthenticated= false
@@ -131,3 +134,6 @@ const authSlice= createSlice({
         })
     }
 })
+
+export default authSlice.reducer;
+export {registerUser, loginUser, logoutUser, authCheck}
