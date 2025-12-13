@@ -12,7 +12,7 @@ const userSchema = new Schema({
         minLength:3,
         maxLength:20,
     },
-    email:{
+    emailId:{
         type:String,
         required:true,
         unique:true,
@@ -27,7 +27,7 @@ const userSchema = new Schema({
     },
     role:{
         type:String,
-        enum:['user','admin'],
+        enum: ['user','admin'],
         default: 'user'
     },
     problemSolved:{
@@ -52,5 +52,4 @@ userSchema.post('findOneAndDelete', async function (userInfo) {
 
 
 const User = mongoose.model("user",userSchema);
-
 module.exports = User;

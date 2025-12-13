@@ -1,15 +1,17 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod';
-import {Link, useNavigate} from 'react-router'
+import {useNavigate} from 'react-router'
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { registerUser } from '../store/authSlice';
-
+import { NavLink } from 'react-router';
+import { FiEyeOff,FiEye  } from "react-icons/fi";
+import { useState } from 'react';
 // schema Validation for signup form
 const signupSchema= z.object({
     firstName: z.string().min(3, "Name must contain atleast contain 3 characters"),
-    email: z.email("Invalid Email"),
+    emailId: z.email("Invalid Email"),
     password: z.string().min(8,"Password must contain atleast 8 characters").regex(/[!@#$%^&*(),.?":{}|<>]/,"Password must contain atleast one special character")
 })
 
@@ -24,6 +26,15 @@ const signupSchema= z.object({
 function Signup(){
     const navigate= useNavigate();
     const dispatch= useDispatch();
+    const [showPassword, setShowPassword]= useState(false);
+    
+    const passwordSet= () =>{
+        if(!showPassword){
+            setShowPassword(true);
+        }
+        else
+            setShowPassword(false);
+    }
     const {
                 register,
                 handleSubmit,
@@ -44,7 +55,7 @@ function Signup(){
     
     return (
         <div className='flex justify-center items-center min-h-screen p-4'>
-            <div className='card w-96 shadow-xl bg-base-100'>
+            <div className='card w-100 shadow-xl bg-base-100'>
                 <div className='card-body'>
                     <form onSubmit={handleSubmit(submitHandler)}>
                         <div className='form-control mt-4'>
@@ -58,23 +69,37 @@ function Signup(){
                             <label className='label mb-1'>
                                 <span className='label-text'>Email</span>
                             </label>
-                            <input {...register('email')} placeholder= 'Enter your Email' className='input input-md'/>
-                            {errors.email && (<span className='text-error'>{errors.email.message}</span>)}
+                            <input {...register('emailId')} placeholder= 'Enter your Email' className='input input-md'/>
+                            {errors.emailId && (<span className='text-error'>{errors.emailId.message}</span>)}
                         </div>
-                        <div className='form-control mt-4'>
-                            <label className='label mb-1'>
-                                <span className='label-text'>Password</span>
-                            </label>
-                            <input {...register('password')} placeholder= 'Enter your password' type="password" className='input input-md'/>
-                            {errors.password && (<span className='text-error'>{errors.password.message}</span>)}
+                        
+                            <div className='form-control mt-4'>
+                                <label className='label mb-1'>
+                                    <span className='label-text'>Password</span>
+                                </label>
+                                <div className='flex justify-between items-center'>
+                                <input {...register('password')} placeholder= 'Enter your password' type={showPassword ? "text" : "password"} className='input input-md'/>
+                                {errors.password && (<span className='text-error'>{errors.password.message}</span>)}
+                                {
+                                   showPassword ? <FiEye className='text-xl' onClick={passwordSet}/> : <FiEyeOff className='text-xl' onClick={passwordSet}/>
+                                }
+                                </div>
+                            </div>
+                            
+                        
+                            
+                        <div className='flex mt-4 justify-center'>
+                            <button type="submit" className={`btn btn-primary py-1 px-5 ${loading ? 'loading': ''}`} disabled={loading}>
+                                {loading ? 'loading' : 'SignUp'}
+                            </button>
                         </div>
-                        <div className='flex justify-center mt-4'>
-                            <button type="submit" className='btn btn-primary py-1 px-5'>Sign Up</button>
-                        </div>
-                        <div>
-                            <Link to="/login">
-                                <p>Already have an account Login</p>
-                            </Link>
+                        <div className='text-center mt-6'>
+                            <span className="text-sm">
+                            Don't have an account?{' '} 
+                            <NavLink to="/login" className="link link-primary">
+                                Login
+                            </NavLink>
+                            </span>
                         </div>
                     </form>
                 </div>

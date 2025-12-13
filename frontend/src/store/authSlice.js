@@ -23,6 +23,7 @@ const loginUser= createAsyncThunk(
     async( userData, {rejectWithValue}) =>{
         try{
             const response= await axiosClient.post('/user/login', userData);
+            console.log(response.data.user)
             return response.data.user;  
         }catch(error){
             return rejectWithValue(error.response.data)
@@ -44,7 +45,7 @@ const logoutUser= createAsyncThunk(
     'auth/logout',
     async( _, {rejectWithValue}) =>{
         try{
-            await axiosClient.post('/logout');
+            await axiosClient.post('/user/logout');
             return null;  
         }catch(error){
             return rejectWithValue(error.response.data)

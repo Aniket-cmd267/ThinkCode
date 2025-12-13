@@ -34,7 +34,5 @@ const InitalizeConnection = async ()=>{
         console.log("Error: "+err);
     }
 }
-
-
 InitalizeConnection();
 
