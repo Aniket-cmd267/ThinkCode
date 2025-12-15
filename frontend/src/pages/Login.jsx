@@ -31,7 +31,7 @@ function Login(){
     const submitHandler= (data)=>{
         dispatch(loginUser(data))
     }
-
+    
     const {isAuthenticated, loading, error} = useSelector((state) => state.slice1)
     useEffect(() =>{
         if(isAuthenticated){

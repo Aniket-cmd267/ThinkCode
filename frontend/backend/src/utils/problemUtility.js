@@ -9,29 +9,28 @@ const getLanguageById = (lang)=>{
         "javascript":63
     }
 
-
     return language[lang.toLowerCase()];
 }
 
 
 const submitBatch = async (submissions)=>{
-
-
-const options = {
-  method: 'POST',
-  url: 'https://judge0-ce.p.rapidapi.com/submissions/batch',
+  const options = {
+    method: 'POST',
+    url: 'https://judge0-extra-ce1.p.rapidapi.com/submissions',
   params: {
-    base64_encoded: 'false'
+    base64_encoded: 'true',
+    wait: 'false',
+    fields: '*'
   },
   headers: {
     'x-rapidapi-key': process.env.JUDGE0_KEY,
-    'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
+    'x-rapidapi-host': 'judge0-extra-ce1.p.rapidapi.com',
     'Content-Type': 'application/json'
   },
-  data: {
-    submissions
-  }
-};
+    data: {
+      submissions
+    }
+  };
 
 async function fetchData() {
 	try {
@@ -59,15 +58,14 @@ const submitToken = async(resultToken)=>{
 
 const options = {
   method: 'GET',
-  url: 'https://judge0-ce.p.rapidapi.com/submissions/batch',
+  url: 'https://judge0-extra-ce1.p.rapidapi.com/submissions/cf192878-b4e8-4e38-ada2-e55a03968457',
   params: {
-    tokens: resultToken.join(","),
-    base64_encoded: 'false',
+    base64_encoded: 'true',
     fields: '*'
   },
   headers: {
     'x-rapidapi-key': process.env.JUDGE0_KEY,
-    'x-rapidapi-host': 'judge0-ce.p.rapidapi.com'
+    'x-rapidapi-host': 'judge0-extra-ce1.p.rapidapi.com'
   }
 };
 

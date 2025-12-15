@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import {useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { authCheck } from './store/authSlice'
+import AdminPanel from "./pages/AdminPanel";
 
 function App(){
 
@@ -19,6 +20,13 @@ function App(){
         <Route path="/" element= {(isAuthenticated) ? <Homepage/> : <Navigate to='/signup'></Navigate>}></Route>
         <Route path="/signup" element= {!(isAuthenticated)? <Signup/> : <Navigate to='/'/>}></Route>
         <Route path="/login" element= {!(isAuthenticated)? <Login/> : <Navigate to='/'/>}></Route>
+        <Route path="/admin" element={<AdminPanel/> }></Route> 
+        {/* <Route path="/admin" element={(isAuthenticated) ? <AdminPanel/> : <Navigate to='/signup'></Navigate>}></Route>  */}
+        {/* isse user nhii huaa tb bhi /admin pe chale jaayega pr woh kush submit nhii kr paayega kyuki adminMiddleware backend mein allowed nhii kregaa. */}
+
+        {/* <Route path="/admin"
+          element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
+        ></Route> */}
       </Routes>
   )
 }
