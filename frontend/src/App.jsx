@@ -6,7 +6,7 @@ import {useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { authCheck } from './store/authSlice'
 import AdminPanel from "./pages/AdminPanel";
-
+import Problem from "./pages/Problem";
 function App(){
 
   const dispatch= useDispatch();
@@ -27,6 +27,7 @@ function App(){
         {/* <Route path="/admin"
           element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
         ></Route> */}
+        <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
       </Routes>
   )
 }
