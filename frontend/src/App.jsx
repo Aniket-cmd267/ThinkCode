@@ -9,26 +9,30 @@ import AdminPanel from "./pages/AdminPanel";
 import Problem from "./pages/Problem";
 function App(){
 
-  const dispatch= useDispatch();
-  const {isAuthenticated} = useSelector((state) => state.slice1)
-  useEffect(() =>{
-    dispatch(authCheck())
-  },[]) ; // empty indicates data will be loaded only once or if a value is present then whenever that data is changed.
+    const dispatch= useDispatch();
+    const {isAuthenticated,loading} = useSelector((state) => state.slice1)
+    useEffect(() =>{
+      dispatch(authCheck())
+    },[]) ; // empty indicates data will be loaded only once or if a value is present then whenever that data is changed.
+    if (loading) {
+      return <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>;
+    }
+    return(
+        <Routes>
+          <Route path="/" element= {(isAuthenticated) ? <Homepage/> : <Navigate to='/signup'></Navigate>}></Route>
+          <Route path="/signup" element= {!(isAuthenticated)? <Signup/> : <Navigate to='/'/>}></Route>
+          <Route path="/login" element= {!(isAuthenticated)? <Login/> : <Navigate to='/'/>}></Route>
+          <Route path="/admin" element={<AdminPanel/> }></Route> 
+          {/* <Route path="/admin" element={(isAuthenticated) ? <AdminPanel/> : <Navigate to='/signup'></Navigate>}></Route>  */}
+          {/* isse user nhii huaa tb bhi /admin pe chale jaayega pr woh kush submit nhii kr paayega kyuki adminMiddleware backend mein allowed nhii kregaa. */}
 
-  return(
-      <Routes>
-        <Route path="/" element= {(isAuthenticated) ? <Homepage/> : <Navigate to='/signup'></Navigate>}></Route>
-        <Route path="/signup" element= {!(isAuthenticated)? <Signup/> : <Navigate to='/'/>}></Route>
-        <Route path="/login" element= {!(isAuthenticated)? <Login/> : <Navigate to='/'/>}></Route>
-        <Route path="/admin" element={<AdminPanel/> }></Route> 
-        {/* <Route path="/admin" element={(isAuthenticated) ? <AdminPanel/> : <Navigate to='/signup'></Navigate>}></Route>  */}
-        {/* isse user nhii huaa tb bhi /admin pe chale jaayega pr woh kush submit nhii kr paayega kyuki adminMiddleware backend mein allowed nhii kregaa. */}
-
-        {/* <Route path="/admin"
-          element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
-        ></Route> */}
-        <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
-      </Routes>
-  )
+          {/* <Route path="/admin"
+            element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
+          ></Route> */}
+          <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
+        </Routes>
+    )
 }
 export default App;
