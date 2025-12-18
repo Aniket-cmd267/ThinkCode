@@ -3,6 +3,7 @@ import axiosClient from "../utils/axiosClient";
 import { useParams } from "react-router";
 import Editor from '@monaco-editor/react';
 import { useRef } from "react";
+import ChatAi from "./ChatAi";
 
 function Problem() {
     const [activeLeftTab, setActiveLeftTab] = useState('description');
@@ -82,6 +83,9 @@ function Problem() {
                     <button className={`tab ${activeLeftTab === 'Submissions' ? 'tab-active' : ''}`}
                         onClick={() => setActiveLeftTab('Submissions')}
                     >Submissions</button>
+                    <button className={`tab ${activeLeftTab==='ChatAi' ? 'tab-active' : ''}`}
+                        onClick={() => setActiveLeftTab('ChatAi')}>ChatAi
+                    </button>
                 </div>
                 {/* COntent Section */}
                 <div className="flex-1 overflow-y-auto p-6">
@@ -153,6 +157,9 @@ function Problem() {
                                         Your submission history will appear here.
                                     </div>
                                 </div>
+                            )}
+                            {activeLeftTab=== 'ChatAi' && (
+                                <ChatAi className="overflow-y-scroll"></ChatAi>
                             )}
                         </>
                     )}
