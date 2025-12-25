@@ -7,6 +7,9 @@ import { useEffect } from "react";
 import { authCheck } from './store/authSlice'
 import AdminPanel from "./pages/AdminPanel";
 import Problem from "./pages/Problem";
+import AdminCreate from "./components/AdminCreate";
+import AdminDelete from "./components/AdminDelete";
+import AdminUpdate from "./components/AdminUpdate";
 
 function App(){
 
@@ -26,14 +29,18 @@ function App(){
           <Route path="/signup" element= {!(isAuthenticated)? <Signup/> : <Navigate to='/'/>}></Route>
           <Route path="/login" element= {!(isAuthenticated)? <Login/> : <Navigate to='/'/>}></Route>
           <Route path="/admin" element={<AdminPanel/> }></Route> 
-          {/* <Route path="/admin" element={(isAuthenticated) ? <AdminPanel/> : <Navigate to='/signup'></Navigate>}></Route>  */}
-          {/* isse user nhii huaa tb bhi /admin pe chale jaayega pr woh kush submit nhii kr paayega kyuki adminMiddleware backend mein allowed nhii kregaa. */}
+          <Route path="/admin/create" element={<AdminCreate/>}></Route> 
+          <Route path="/admin/update" element={<AdminUpdate/>}></Route>
+          <Route path="/admin/delete" element={<AdminDelete/>}></Route>
 
           {/* <Route path="/admin"
             element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
           ></Route> */}
           <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
         </Routes>
+
+        // {/* <Route path="/admin" element={(isAuthenticated) ? <AdminPanel/> : <Navigate to='/signup'></Navigate>}></Route>  */}
+        //   {/* isse user nhii huaa tb bhi /admin pe chale jaayega pr woh kush submit nhii kr paayega kyuki adminMiddleware backend mein allowed nhii kregaa. */}
     )
 }
 export default App;

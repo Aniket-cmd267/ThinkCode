@@ -5,7 +5,6 @@ const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 const Submission = require("../models/submission")
 
-
 const register = async (req, res) => {
 
     try {
@@ -18,7 +17,7 @@ const register = async (req, res) => {
         // console.log(req.body)
         // console.log(emailId)
         const user = await User.create(req.body);
-        // console.log(user)
+        console.log(user)
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: 'user' }, process.env.JWT_KEY, { expiresIn: 60 * 60 });
 
         const reply = {

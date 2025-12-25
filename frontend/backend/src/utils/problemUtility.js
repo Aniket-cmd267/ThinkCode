@@ -15,22 +15,20 @@ const getLanguageById = (lang)=>{
 
 const submitBatch = async (submissions)=>{
   const options = {
-    method: 'POST',
-    url: 'https://judge0-extra-ce1.p.rapidapi.com/submissions',
+  method: 'POST',
+  url: 'https://judge0-ce.p.rapidapi.com/submissions/batch',
   params: {
-    base64_encoded: 'true',
-    wait: 'false',
-    fields: '*'
+    base64_encoded: 'false'
   },
   headers: {
-    'x-rapidapi-key': process.env.JUDGE0_KEY,
-    'x-rapidapi-host': 'judge0-extra-ce1.p.rapidapi.com',
+    'x-rapidapi-key': '399441a3f3msh7cbd869b0d16040p1465b8jsne2000970e27e',
+    'x-rapidapi-host': 'judge0-ce.p.rapidapi.com',
     'Content-Type': 'application/json'
   },
-    data: {
-      submissions
-    }
-  };
+  data: {
+    submissions
+  }
+};
 
 async function fetchData() {
 	try {
@@ -58,14 +56,15 @@ const submitToken = async(resultToken)=>{
 
 const options = {
   method: 'GET',
-  url: 'https://judge0-extra-ce1.p.rapidapi.com/submissions/cf192878-b4e8-4e38-ada2-e55a03968457',
+  url: 'https://judge0-ce.p.rapidapi.com/submissions/batch',
   params: {
-    base64_encoded: 'true',
+    tokens: resultToken.join(","),
+    base64_encoded: 'false',
     fields: '*'
   },
   headers: {
-    'x-rapidapi-key': process.env.JUDGE0_KEY,
-    'x-rapidapi-host': 'judge0-extra-ce1.p.rapidapi.com'
+    'x-rapidapi-key':'399441a3f3msh7cbd869b0d16040p1465b8jsne2000970e27e',
+    'x-rapidapi-host': 'judge0-ce.p.rapidapi.com'
   }
 };
 
@@ -91,12 +90,7 @@ async function fetchData() {
   
   await waiting(1000);
 }
-
-
-
 }
-
-
 module.exports = {getLanguageById,submitBatch,submitToken};
 
 

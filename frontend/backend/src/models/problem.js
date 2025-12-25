@@ -75,7 +75,6 @@ const problemSchema = new Schema({
                 }
             }
         ],
-
         problemCreator:{
             type: Schema.Types.ObjectId,
             ref:'user',
@@ -85,7 +84,6 @@ const problemSchema = new Schema({
 
 
 const Problem = mongoose.model('problem',problemSchema);
-
 module.exports = Problem;
 
 

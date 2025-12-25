@@ -11,6 +11,7 @@ const userMiddleware = async (req,res,next)=>{
             throw new Error("Token is not persent");
 
         const payload = jwt.verify(token,process.env.JWT_KEY);
+
         const {_id} = payload;
         if(!_id){
             throw new Error("Invalid token");
@@ -27,6 +28,7 @@ const userMiddleware = async (req,res,next)=>{
         next();
     }
     catch(err){
+        console.log(err.message)    
         res.status(401).send("Error: "+ err.message)
     }
 
