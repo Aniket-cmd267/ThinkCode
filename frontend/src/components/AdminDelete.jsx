@@ -37,7 +37,7 @@ export default function AdminDelete(){
         }                                                          
     }
     return (
-        <div className="min-h-screen p-6 bg-base-200 ">
+        <div className="min-h-screen p-6 bg-neutral-900">
             <div>
                 <h1 className="text-center font-bold text-accent text-shadow-accent mb-10">Delete problem</h1>
                 <div className="flex flex-col gap-4 ">
@@ -46,10 +46,10 @@ export default function AdminDelete(){
                             <div key={problem._id} className="w-250 flex-col justify-center gap-4 card rounded-3xl bg-neutral p-4 text-neutral-content hover:3d">
                                 <div className="flex gap-4 text-neutral-content rounded-2xl">
                                     <h1>{problem?.title}</h1>
-                                    <h2>{problem?.difficulty}</h2>
-                                    <h2>{problem?.tags}</h2>
+                                    <h2 className="badge badge-success text-black">{problem?.difficulty}</h2>
+                                    <h2 className="badge badge-warning ">{problem?.tags}</h2>
                                 </div>
-                                <button onClick={() => handleClick(problem)} className={`btn bg-red-950 w-50 ${Disabled} ? 'loading' : '' `}>Delete</button>
+                                <button onClick={() => handleClick(problem)} className={`btn bg-red-950 rounded-2xl w-40 ${Disabled} ? 'loading' : '' `}>Delete</button>
                             </div>
                         ))
                     }

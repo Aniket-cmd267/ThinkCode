@@ -10,6 +10,7 @@ import Problem from "./pages/Problem";
 import AdminCreate from "./components/AdminCreate";
 import AdminDelete from "./components/AdminDelete";
 import AdminUpdate from "./components/AdminUpdate";
+import UpdateProblem from "./components/UpdateProblem";
 
 function App(){
 
@@ -32,7 +33,7 @@ function App(){
           <Route path="/admin/create" element={<AdminCreate/>}></Route> 
           <Route path="/admin/update" element={<AdminUpdate/>}></Route>
           <Route path="/admin/delete" element={(isAuthenticated && user?.role ==='admin') ? <AdminDelete/> : <Login/>}></Route>
-
+          <Route path="/admin/update/:id" element={<UpdateProblem/>}></Route>
           {/* <Route path="/admin"
             element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
           ></Route> */}

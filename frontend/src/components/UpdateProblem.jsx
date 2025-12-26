@@ -1,10 +1,10 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useDispatch } from "react-redux";
+import { data, useParams } from "react-router";
+import { useEffect } from "react";
 import axiosClient from "../utils/axiosClient";
-import { useNavigate } from "react-router";
-
+import { useState } from "react";
 const problemSchema = z.object({
     title: z.string().min(1, "Title is required"),
     description: z.string().min(1, "Description is required"),
@@ -35,72 +35,82 @@ const problemSchema = z.object({
             completeCode: z.string().min(1, "Complete code is required"),
         })
     ).min(1, "At least one reference solution is required"),
-    problemCreator: z.string().optional(),
+    problemCreator: z.string().trim().max(24,'not more than 24 characters'),
 });
+export default function UpdateProblem() {
+    // const [problemData, setProblemData]= useState({})
+    const {id}= useParams()
+    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(problemSchema),
+        defaultValues: {
+            title: '',
+            description: "",
+            difficulty: "easy",
+            tags: "array",
+            visibleTestCases: [{ input: "", output: "", explanation: "" }],
+            hiddenTestCases: [{ input: "", output: "" }],
+            startCode: [{ language: "javascript", initialCode: "" }],
+            referenceSolution: [{ language: "javascript", completeCode: "" }],
+            problemCreator: "",
+        },
+    });
 
-export default function AdminCreate(){
-    const { register, control, handleSubmit, reset, formState: {errors} } = useForm({
-            resolver: zodResolver(problemSchema),
-            defaultValues: {
-                title: "",
-                description: "",
-                difficulty: "easy",
-                tags: "array",
-                visibleTestCases: [{ input: "", output: "", explanation: "" }],
-                hiddenTestCases: [{ input: "", output: "" }],
-                startCode: [{ language: "javascript", initialCode: "" }],
-                referenceSolution: [{ language: "javascript", completeCode: "" }],
-                problemCreator: "",
-            },
-        });
-    
-        const { fields: visibleFields, append: appendVisible, remove: removeVisible } = useFieldArray({
-            control,
-            name: "visibleTestCases",
-        });
-    
-        const { fields: hiddenFields, append: appendHidden, remove: removeHidden } = useFieldArray({
-            control,
-            name: "hiddenTestCases",
-        });
-    
-        const { fields: startFields, append: appendStart, remove: removeStart } = useFieldArray({
-            control,
-            name: "startCode",
-        });
-    
-        const { fields: refFields, append: appendRef, remove: removeRef } = useFieldArray({
-            control,
-            name: "referenceSolution",
-        });
-    
-        const navigate= useNavigate();
-        async function onSubmit(data){
+    const { fields: visibleFields, append: appendVisible, remove: removeVisible } = useFieldArray({
+        control,
+        name: "visibleTestCases",
+    });
+
+    const { fields: hiddenFields, append: appendHidden, remove: removeHidden } = useFieldArray({
+        control,
+        name: "hiddenTestCases",
+    });
+
+    const { fields: startFields, append: appendStart, remove: removeStart } = useFieldArray({
+        control,
+        name: "startCode",
+    });
+
+    const { fields: refFields, append: appendRef, remove: removeRef } = useFieldArray({
+        control,
+        name: "referenceSolution",
+    });
+    useEffect(() =>{
+        const fetchProblem= async() =>{
             try{
-                console.log(data);
-                await axiosClient.post('/problem/create', data);
-                navigate('/')
-                alert('Problem added successfully');
-            }
-            catch(error){
-                alert(`Error: ${error?.response?.data?.message || error.message}`)
+                const {data}= await axiosClient.get(`/problem/problemById/${id}`)
+                // setProblemData(data)
+                reset(data);
+                console.log(data)
+            }catch(err){
+                return err.message
             }
         }
-        return (
-            <div className="p-6 bg-neutral-900 min-h-screen">
+        fetchProblem();
+    },[id])
+    async function onSubmit(data) {
+        try{
+            console.log(data)
+            await axiosClient.put(`/problem/update/${id}`,data)
+            alert('Problem updated successfully')
+        }catch(err){
+            return err.message
+        }
+    }
+    return (
+        <div className="p-6 bg-neutral-900 min-h-screen">
             <div className="max-w-4xl mx-auto">
                 <div className="card bg-base-100 shadow-xl">
                     <div className="card-body bg-neutral-950">
-                        <h2 className="card-title">Create DSA Problem</h2>
+                        <h2 className="card-title">Update</h2>
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                             <div>
                                 <label className="label">
-                                    <span className="label-text">Title</span>
+                                    <span className="label-text" >Title</span>
                                 </label>
                                 <input
-                                    className="input input-bordered w-full"
+                                    className="input input-bordered w-full "
                                     {...register("title")}
-                                    placeholder="Two Sum"
+                                    
                                 />
                                 {errors.title && <p className="text-sm text-error mt-1">{errors.title.message}</p>}
                             </div>
@@ -132,15 +142,15 @@ export default function AdminCreate(){
 
                                 <div>
                                     <label className="label">
-                                            <span className="label-text">Tags</span>
-                                        </label>
-                                        <select className="select select-bordered w-full" {...register("tags")}>
-                                            <option value="array">array</option>
-                                            <option value="linkedList">linkedList</option>
-                                            <option value="graph">graph</option>
-                                            <option value="dp">dp</option>
-                                        </select>
-                                        {errors.tags && <p className="text-sm text-error mt-1">{errors.tags.message}</p>}
+                                        <span className="label-text">Tags</span>
+                                    </label>
+                                    <select className="select select-bordered w-full" {...register("tags")}>
+                                        <option value="array">array</option>
+                                        <option value="linkedList">linkedList</option>
+                                        <option value="graph">graph</option>
+                                        <option value="dp">dp</option>
+                                    </select>
+                                    {errors.tags && <p className="text-sm text-error mt-1">{errors.tags.message}</p>}
                                 </div>
                             </div>
 
@@ -237,13 +247,13 @@ export default function AdminCreate(){
                             </div>
 
                             <div className="flex gap-2 justify-end">
-                                <button type="submit" className="btn btn-primary">Create</button>
-                                <button type="button" className="btn btn-ghost" onClick={() => reset()}>Reset</button>
+                                <button type="submit" className="btn btn-primary">Update</button>
+                                {/* <button type="button" className="btn btn-ghost" onClick={() => reset(problemData)}>Reset</button> */}
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        )
+    )
 }
