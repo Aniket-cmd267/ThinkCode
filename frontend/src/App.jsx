@@ -14,7 +14,7 @@ import AdminUpdate from "./components/AdminUpdate";
 function App(){
 
     const dispatch= useDispatch();
-    const {isAuthenticated,loading} = useSelector((state) => state.slice1)
+    const {isAuthenticated,user,loading} = useSelector((state) => state.slice1)
     useEffect(() =>{
       dispatch(authCheck())
     },[]) ; // empty indicates data will be loaded only once or if a value is present then whenever that data is changed.
@@ -31,7 +31,7 @@ function App(){
           <Route path="/admin" element={<AdminPanel/> }></Route> 
           <Route path="/admin/create" element={<AdminCreate/>}></Route> 
           <Route path="/admin/update" element={<AdminUpdate/>}></Route>
-          <Route path="/admin/delete" element={<AdminDelete/>}></Route>
+          <Route path="/admin/delete" element={(isAuthenticated && user?.role ==='admin') ? <AdminDelete/> : <Login/>}></Route>
 
           {/* <Route path="/admin"
             element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}

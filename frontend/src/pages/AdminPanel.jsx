@@ -7,30 +7,36 @@ import { MdDelete } from "react-icons/md";
 import { FiEdit2 } from "react-icons/fi";
 import { Link } from "react-router";
 
-
 function AdminPanel() {
     const navigate= useNavigate();
     const adminOptions = [
         {
             id: 'create',
-            description: 'Create problem',
-            bgColor: 'bg-sucess',
+            description: 'Create a DSA problem',
+            bgColor: 'bg-neutral',
             route: '/admin/create',
             btn: 'btn-success'
         },
         {
             id: 'update',
             description: 'Update problem',
-            bgColor: 'bg-warning',
+            bgColor: 'bg-neutral',
             route: '/admin/update',
             btn: 'btn-warning'
         },
         {
             id: 'delete',
             description: 'Delete problem',
-            bgColor: 'bg-error',
+            bgColor: 'bg-neutral',
             route: '/admin/delete',
             btn: 'btn-error'
+        },
+        {
+            id: 'video',
+            description: 'Upload video solution',
+            bgColor: 'bg-neutral',
+            btn: 'btn-secondary',
+            route: '/admin/video'
         }
     ]
 
@@ -38,9 +44,9 @@ function AdminPanel() {
         navigate(`${option.route}`)
     }
     return (
-        <div className="min-h-screen bg-base-200 p-8">
+        <div className="min-h-screen p-8 bg-neutral-900">
             <div className="max-w-6xl mx-auto">
-                <div className="hero bg-base-100 p-6 rounded-lg shadow-sm mb-6">
+                <div className="hero bg-neutral p-6 rounded-lg shadow-sm mb-6">
                     <div className="hero-content">
                         <div>
                             <h1 className="text-3xl font-bold">Admin Panel</h1>
@@ -52,13 +58,13 @@ function AdminPanel() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
                     {adminOptions.map((option) => (
                         <div
                             key={option.id}
                             role="button"
                             onClick={() => handleClick(option)}
-                            className="card bg-base-100 shadow hover:shadow-lg transition-all duration-150 cursor-pointer"
+                            className={`card ${option.bgColor} shadow hover:shadow-lg transition-all duration-150 cursor-pointer`}
                         >
                             <div className="card-body">
                                 <div className="flex items-start gap-4">
