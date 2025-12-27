@@ -22,26 +22,31 @@ function App(){
     if (loading) {
       return <div className="min-h-screen flex items-center justify-center">
         <span className="loading loading-spinner loading-lg"></span>
-      </div>;
+      </div>
     }
     return(
         <Routes>
           <Route path="/" element= {(isAuthenticated) ? <Homepage/> : <Navigate to='/signup'></Navigate>}></Route>
           <Route path="/signup" element= {!(isAuthenticated)? <Signup/> : <Navigate to='/'/>}></Route>
           <Route path="/login" element= {!(isAuthenticated)? <Login/> : <Navigate to='/'/>}></Route>
-          <Route path="/admin" element={<AdminPanel/> }></Route> 
-          <Route path="/admin/create" element={<AdminCreate/>}></Route> 
-          <Route path="/admin/update" element={<AdminUpdate/>}></Route>
-          <Route path="/admin/delete" element={(isAuthenticated && user?.role ==='admin') ? <AdminDelete/> : <Login/>}></Route>
-          <Route path="/admin/update/:id" element={<UpdateProblem/>}></Route>
-          {/* <Route path="/admin"
+          <Route path="/admin"
             element={(isAuthenticated) && user?.role ==='admin' ? <AdminPanel/> : <Navigate to='/'/>}
-          ></Route> */}
+          ></Route>
+          <Route path="/admin/create" 
+          element={(isAuthenticated) && user?.role=== 'admin' ? <AdminCreate/> : <Navigate to='/'/>}></Route> 
+          <Route path="/admin/update" 
+          element={(isAuthenticated) && user?.role=== 'admin' ? <AdminUpdate/> : <Navigate to='/'/>}></Route>
+          <Route path="/admin/update/:id" 
+          element={(isAuthenticated) && user?.role=== 'admin' ? <UpdateProblem/> : <Navigate to='/'/>}></Route>
+          <Route path="/admin/delete" 
+          element={(isAuthenticated && user?.role ==='admin') ? <AdminDelete/> : <Navigate to='/'/>}></Route>
+
           <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
         </Routes>
 
         // {/* <Route path="/admin" element={(isAuthenticated) ? <AdminPanel/> : <Navigate to='/signup'></Navigate>}></Route>  */}
         //   {/* isse user nhii huaa tb bhi /admin pe chale jaayega pr woh kush submit nhii kr paayega kyuki adminMiddleware backend mein allowed nhii kregaa. */}
+        /* <Route path="/admin" element={<AdminPanel/> }></Route>  */
     )
 }
 export default App;

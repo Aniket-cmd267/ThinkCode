@@ -3,7 +3,6 @@ const User = require("../models/user");
 const redisClient = require("../config/redis")
 
 const userMiddleware = async (req,res,next)=>{
-
     try{
         const {token} = req.cookies;
         // console.log(token)

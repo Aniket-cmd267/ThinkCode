@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router'; // Fixed import
+import { NavLink,useNavigate } from 'react-router'; // Fixed import
 import { useDispatch, useSelector } from 'react-redux';
 import axiosClient from '../utils/axiosClient';
 import { logoutUser } from '../store/authSlice';
 
 function Homepage() {
+  const navigate= useNavigate();
   const dispatch= useDispatch();
   const {user} = useSelector((state) => state.slice1)
   const handleLogout= () =>{
@@ -49,6 +50,9 @@ function Homepage() {
                       solvedProblems.some(sp => sp._id === problem._id);
     return difficultyMatch && tagMatch && statusMatch;
   });
+  const switchToAdminPanel =() => {
+      navigate('/admin')
+  }
   return (
     <div className="min-h-screen bg-base-200">
       <nav className="navbar bg-base-100 shadow-lg px-4">
@@ -61,6 +65,10 @@ function Homepage() {
               {user?.firstName}
             </div>
             <ul className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+              {user?.role==='admin' ? 
+              (<li><button onClick={switchToAdminPanel}>Access Admin</button></li>) : 
+              (<></>)  
+              }
               <li><button onClick={handleLogout}>Logout</button></li>
             </ul>
           </div>

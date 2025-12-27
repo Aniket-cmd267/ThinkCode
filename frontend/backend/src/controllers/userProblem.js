@@ -145,7 +145,7 @@ const getAllProblem = async (req, res) => {
   }
 }
 
-const solvedAllProblembyUser = async (req, res) => {
+const  solvedAllProblembyUser = async (req, res) => {
 
   try {
 
