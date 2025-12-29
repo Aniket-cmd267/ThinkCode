@@ -4,11 +4,15 @@ import { useNavigate, useParams } from "react-router";
 import Editor from '@monaco-editor/react';
 import { useRef } from "react";
 import ChatAi from "./ChatAi";
-import { useSelector } from "react-redux";
+import { useSelector } from "react-redux"
+import { IoIosAddCircle } from "react-icons/io";
 
 function Problem() {
     const navigate= useNavigate();
+    const [selectTestCase, setTestCaseTab] =useState()
     const [submissionHistory, setSubmissionHistory]= useState([]);
+    const [testcaseHistory, setTestCaseHistory]= useState([])
+    const [resultHistory, setResultHistory]= useState({});
     const [activeLeftTab, setActiveLeftTab] = useState('description');
     const [activeRightTab, setActiveRightTab] = useState('code');
     const [problem, setProblem] = useState(null);
@@ -38,6 +42,7 @@ function Problem() {
                 setProblem(response.data)
                 setCode(initialCode)
                 setLoading(false)
+                setTestCaseHistory(response?.data.visibleTestCases)
             } catch (err) {
                 console.error('Error fetching problem: ', err);
                 setLoading(false)
@@ -73,6 +78,12 @@ function Problem() {
     function handleEditorDidMount(editor){ // we are giving the instance of monaco editor 
         editorRef.current= editor
     }
+
+    // Console
+    const showTestCases= () =>{
+        setActiveRightTab('testcase')
+    }
+    
     // Run Code
     async function runCode(code,lang) {
         try{
@@ -82,8 +93,10 @@ function Problem() {
             }
             console.log(data)
             const response= await axiosClient.post(`/submission/run/${problemId}`,data)
-            console.log(response)
+            console.log(response?.data)
             alert('Code Run successfully')
+            // setTestCaseHistory(response?.data)
+            // setActiveRightTab('testcase')
         }catch(err){
             return err.message;
         }
@@ -98,13 +111,14 @@ function Problem() {
             const response= await axiosClient.post(`/submission/submit/${problemId}`,data)
             console.log(response?.data)
             setSubmissionHistory([...submissionHistory,response?.data])
-            alert('Problem Submitted successfully')
+            setResultHistory(response?.data)
+            setActiveRightTab('result')
+            setActiveLeftTab('Submissions')
+            // alert('Problem Submitted successfully')
         }catch(err){
             console.log(err.message)
         }
     }
-    
-    
     if (loading)
         return (
             <div className="loading loading-spinner"></div>
@@ -196,8 +210,8 @@ function Problem() {
                             {activeLeftTab === 'Submissions' && (
                                 <div>
                                     <h2 className="text-xl font-bold mb-4">My Submissions</h2>
-                                    <div className="bg-neutral-800 p-3 rounded-2xl">
-                                        <div className="flex justify-around text-warning w-full">
+                                    <div className=" p-3 rounded-2xl">
+                                        <div className="flex justify-around text-warning w-full bg-neutral-800">
                                             <p>No</p>
                                             <h3>Status</h3>
                                             <h3>Language</h3>
@@ -208,16 +222,13 @@ function Problem() {
                                         {
                                             submissionHistory?.map((data,i) => (
                                                 
-                                                <div key={i} className="flex justify-around w-full text-accent">
+                                                <div key={i} className="flex justify-around w-full text-accent bg-neutral-800">
                                                     
                                                     <p className="text-accent">{i + 1}</p>
                                                     <h3>{data?.status}</h3>
                                                     <h3>{data?.language}</h3>
                                                     <h3>{data?.runtime}</h3>
                                                     <h3>{data?.memory}</h3> 
-
-    
-                                                    {/* <p>{data?.testCasesPassed+'/'+data?.testCasesTotal}</p> */}
                                                 </div>
                                             ))
                                         }
@@ -225,13 +236,13 @@ function Problem() {
                                 </div>
                             )}
                             {activeLeftTab === 'ChatAi' && (
-                                <ChatAi className="overflow-y-scroll"></ChatAi>
+                                <ChatAi className="overflow-y-scroll" problem={problem}></ChatAi>
                             )}
                         </>
                     )}
                 </div>
             </div>
-            <div className="w-1/2 flex flex-col">
+            <div className="w-1/2 flex flex-col min-h-screen">
                 <div className="tabs tabs-bordered bg-base-200 px-4">
                     <button className={`tab ${activeRightTab === 'code' ? 'tab-active' : ''}`}
                         onClick={() => setActiveRightTab('code')}>Code</button>
@@ -288,10 +299,29 @@ function Problem() {
                                 />
                             </div>
                             <div className="p-4 border-t border-base-300 flex justify-center gap-4">
-                                <button className="btn btn-ghost">Console</button>
+                                <button className="btn btn-ghost" onClick={() => showTestCases()}>Console</button>
                                 <button className="btn btn-ghost" onClick={() => runCode(code,selectedLanguage)}>Run</button>
                                 <button className="btn btn-ghost" onClick={() => submitCode(code,selectedLanguage)}>Submit</button>
                             </div>
+                        </div>
+                    )}
+                    {activeRightTab=== 'result' && (
+                                <div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
+                                    <h2>TestCase: {resultHistory?.testCasesPassed+'/'+resultHistory?.testCasesTotal}</h2>
+                                    <h3>Memory: {resultHistory?.memory}</h3>
+                                    <h3>Time: {resultHistory?.runtime}</h3>
+                                </div>
+                        )
+                    }
+                    {activeRightTab=== 'testcase' && 
+                    (
+                        <div className="text-white flex gap-3 items-center mt-10 ml-5 bg-neutral-950 p-3">
+                            {problem && testcaseHistory.map((testcase,index) =>(
+                                <div key={index}>
+                                    <button className="btn btn-sm btn-accent" onClick={() => setTestCaseTab(testcase)}>TestCase {index+1}</button>
+                                </div>
+                            ))} 
+                            <button className="btn-sm p-0"><IoIosAddCircle size={25}/></button>
                         </div>
                     )}
                 </div>

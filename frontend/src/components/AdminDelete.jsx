@@ -1,7 +1,6 @@
 import { useEffect,useState } from "react"
 import axiosClient from "../utils/axiosClient"
 import { Link } from "react-router"
-// import { DottedGlowBackground } from "@/components/ui/dotted-glow-background";
 
 export default function AdminDelete(){
     const [allProblem, setAllProblem]= useState([])
@@ -9,7 +8,6 @@ export default function AdminDelete(){
     useEffect(() =>{
         const getAllProblem= async () =>{
             try{
-                console.log('Hello world')
                 const data= await axiosClient.get('/problem/getAllProblem') // we prefer destructuring the data coz axios sends an object which contians more info than the data in object 
                             // we can see that through console.log 
                 // const {data}= await axiosClient.get('/problem/getAllProblem')
@@ -37,62 +35,32 @@ export default function AdminDelete(){
         }                                                          
     }
     return (
-        <div className="min-h-screen p-6 bg-neutral-900">
+        <div className="min-h-screen p-6 bg-neutral-950 transition-colors duration-300">
             <div>
-                <h1 className="text-center font-bold text-accent text-shadow-accent mb-10">Delete problem</h1>
-                <div className="flex flex-col gap-4 ">
+                <h1 className="text-center font-bold text-primary mb-8 drop-shadow-sm">Delete problem</h1>
+                <div className="flex flex-col gap-4 bg-neutral-700 rounded-xl">
                     {
                         allProblem?.map((problem) => (
-                            <div key={problem._id} className="w-250 flex-col justify-center gap-4 card rounded-3xl bg-neutral p-4 text-neutral-content hover:3d">
-                                <div className="flex gap-4 text-neutral-content rounded-2xl">
-                                    <h1>{problem?.title}</h1>
-                                    <h2 className="badge badge-success text-black">{problem?.difficulty}</h2>
-                                    <h2 className="badge badge-warning ">{problem?.tags}</h2>
+                            <div key={problem._id} className="card bg-base-100 dark:bg-base-200/5 shadow-md p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-transform duration-200 hover:scale-[1.02] hover:shadow-2xl motion-safe:transform-gpu">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                    <h1 className="text-lg font-semibold text-base-content">{problem?.title}</h1>
+                                    <div className="flex gap-2 mt-2 sm:mt-0">
+                                        <h2 className="badge badge-primary">{problem?.difficulty}</h2>
+                                        {Array.isArray(problem?.tags) ? (
+                                            problem.tags.map((t,i) => (
+                                                <span key={i} className="badge badge-ghost">{t}</span>
+                                            ))
+                                        ) : (
+                                            <span className="badge badge-ghost">{problem?.tags}</span>
+                                        )}
+                                    </div>
                                 </div>
-                                <button onClick={() => handleClick(problem)} className={`btn bg-red-950 rounded-2xl w-40 ${Disabled} ? 'loading' : '' `}>Delete</button>
+                                <button onClick={() => handleClick(problem)} disabled={Disabled} className={`btn btn-error rounded-full w-40 ${Disabled ? 'loading' : ''} transition-transform duration-150 active:scale-95`}>Delete</button>
                             </div>
                         ))
                     }
                 </div>
             </div>
-
-            {/* <div
-      className="relative mx-auto flex w-full max-w-7xl items-center justify-center">
-      <DottedGlowBackground
-        className="pointer-events-none mask-radial-to-90% mask-radial-at-center opacity-20 dark:opacity-100"
-        opacity={1}
-        gap={10}
-        radius={1.6}
-        colorLightVar="--color-neutral-500"
-        glowColorLightVar="--color-neutral-600"
-        colorDarkVar="--color-neutral-500"
-        glowColorDarkVar="--color-sky-800"
-        backgroundOpacity={0}
-        speedMin={0.3}
-        speedMax={1.6}
-        speedScale={1} />
-      <div
-        className="relative z-10 flex w-full flex-col items-center justify-between space-y-6 px-8 py-16 text-center md:flex-row">
-        <div>
-          <h2
-            className="text-center text-4xl font-normal tracking-tight text-neutral-900 sm:text-5xl md:text-left dark:text-neutral-400">
-            Ready to buy{" "}
-            <span className="font-bold dark:text-white">Aceternity Pro</span>?
-          </h2>
-          <p
-            className="mt-4 max-w-lg text-center text-base text-neutral-600 md:text-left dark:text-neutral-300">
-            Unlock premium components, advanced animations, and exclusive
-            templates to build stunning modern interfaces.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <button
-            className="inline-flex items-center justify-center rounded-lg border border-neutral-300 bg-white px-8 py-3 text-sm font-medium text-neutral-700 shadow-sm transition-all duration-200 hover:bg-neutral-50 hover:shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700">
-            View Pricing
-          </button>
-        </div>
-      </div>
-    </div>         */}
         </div>
     )
 }
