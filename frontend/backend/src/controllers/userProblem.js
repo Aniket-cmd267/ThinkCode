@@ -33,7 +33,6 @@ const createProblem = async (req, res) => {
         }
       }
     }
-    // We can store it in our DB
     const userProblem = await Problem.create({
       ...req.body,
       problemCreator: req.result._id

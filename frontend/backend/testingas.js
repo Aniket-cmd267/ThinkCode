@@ -186,63 +186,63 @@ module.exports = {getLanguageById,submitBatch,submitToken};
 // 
 
 
-// {
-//     "title": "Subtract Two Numbers",
-//     "description": "Write a program that takes two integers as input and returns the result of the first number minus the second number (a - b).",
-//     "difficulty": "easy",
-//     "tags": "array",
-//     "visibleTestCases": [
-//         {
-//             "input": "10 5",
-//             "output": "5",
-//             "explanation": "10 - 5 equals 5"
-//         },
-//         {
-//             "input": "2 10",
-//             "output": "-8",
-//             "explanation": "2 - 10 equals -8"
-//         }
-//     ],
-//     "hiddenTestCases": [
-//         {
-//             "input": "0 0",
-//             "output": "0"
-//         },
-//         {
-//             "input": "-5 -5",
-//             "output": "0"
-//         },
-//         {
-//             "input": "100 250",
-//             "output": "-150"
-//         }
-//     ],
-//     "startCode": [
-//         {
-//             "language": "C++",
-//             "initialCode": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    // Read input and print subtraction here\n    return 0;\n}"
-//         },
-//         {
-//             "language": "Java",
-//             "initialCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Read input and print subtraction here\n    }\n}"
-//         },
-//         {
-//             "language": "JavaScript",
-//             "initialCode": "// Use fs.readFileSync(0) to read from stdin\nconst input = require('fs').readFileSync(0, 'utf-8');"
-//         }
-//     ],
-//     "referenceSolution": [
-//         {
-//             "language": "C++",
-//             "completeCode": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    if(cin >> a >> b) {\n        cout << a - b;\n    }\n    return 0;\n}"
-//         },
-//         {
-//             "language": "Java",
-//             "completeCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if(sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            System.out.print(a - b);\n        }\n    }\n}"
-//         },
-//         {
-//             "language": "JavaScript",
-//             "completeCode": "const input = require('fs').readFileSync(0, 'utf-8').trim();\nconst parts = input.split(/\\s+/);\nif (parts.length >= 2) {\n    const a = parseInt(parts[0]);\n    const b = parseInt(parts[1]);\n    process.stdout.write((a - b).toString());\n}"
-//         }
-//     ]
-// }
+{
+    "title": "Subtract Two Numbers",
+    "description": "Write a program that takes two integers as input and returns the result of the first number minus the second number (a - b).",
+    "difficulty": "easy",
+    "tags": "array",
+    "visibleTestCases": [
+        {
+            "input": "10 5",
+            "output": "5",
+            "explanation": "10 - 5 equals 5"
+        },
+        {
+            "input": "2 10",
+            "output": "-8",
+            "explanation": "2 - 10 equals -8"
+        }
+    ],
+    "hiddenTestCases": [
+        {
+            "input": "0 0",
+            "output": "0"
+        },
+        {
+            "input": "-5 -5",
+            "output": "0"
+        },
+        {
+            "input": "100 250",
+            "output": "-150"
+        }
+    ],
+    "startCode": [
+        {
+            "language": "C++",
+            "initialCode": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    // Read input and print subtraction here\n    return 0;\n}"
+        },
+        {
+            "language": "Java",
+            "initialCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Read input and print subtraction here\n    }\n}"
+        },
+        {
+            "language": "JavaScript",
+            "initialCode": "// Use fs.readFileSync(0) to read from stdin\nconst input = require('fs').readFileSync(0, 'utf-8');"
+        }
+    ],
+    "referenceSolution": [
+        {
+            "language": "C++",
+            "completeCode": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int a, b;\n    if(cin >> a >> b) {\n        cout << a - b;\n    }\n    return 0;\n}"
+        },
+        {
+            "language": "Java",
+            "completeCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        if(sc.hasNextInt()) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            System.out.print(a - b);\n        }\n    }\n}"
+        },
+        {
+            "language": "JavaScript",
+            "completeCode": "const input = require('fs').readFileSync(0, 'utf-8').trim();\nconst parts = input.split(/\\s+/);\nif (parts.length >= 2) {\n    const a = parseInt(parts[0]);\n    const b = parseInt(parts[1]);\n    process.stdout.write((a - b).toString());\n}"
+        }
+    ]
+}

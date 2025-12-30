@@ -52,11 +52,11 @@ const login = async (req, res) => {
 
         const user = await User.findOne({ emailId });
     
-        // const match = await bcrypt.compare(password, user.password);
+        const match = await bcrypt.compare(password, user.password);
         // console.log(password);
         // console.log(user.password);
-        // if (!match)
-            // throw new Error("Invalid Credentials");
+        if (!match)
+            throw new Error("Invalid Credentials");
 
         const reply = {
             firstName: user.firstName,
@@ -76,8 +76,6 @@ const login = async (req, res) => {
         res.status(401).send("Error: " + err);
     }
 }
-
-
 // logOut feature
 
 const logout = async (req, res) => {

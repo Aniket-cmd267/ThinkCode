@@ -6,13 +6,34 @@ import { useRef } from "react";
 import ChatAi from "./ChatAi";
 import { useSelector } from "react-redux"
 import { IoIosAddCircle } from "react-icons/io";
+import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 
+const TestCaseSchema = z.object({
+    visibleTestCases: z.array(
+        z.object({
+            input: z.string().min(1, 'Input is required'),
+            output: z.string().min(1, 'Output is required')
+        })
+    )
+})
 function Problem() {
-    const navigate= useNavigate();
-    const [selectTestCase, setTestCaseTab] =useState()
-    const [submissionHistory, setSubmissionHistory]= useState([]);
-    const [testcaseHistory, setTestCaseHistory]= useState([])
-    const [resultHistory, setResultHistory]= useState({});
+    const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(TestCaseSchema),
+        defaultValue: {
+            visibleTestCases: [{ input: "", output: "" }]
+        }
+    })
+    const { fields: visibleFields, append: appendVisible, remove: removeVisible } = useFieldArray({
+        control,
+        name: "visibleTestCases",
+    });
+    const [viewCode, setViewCode] = useState(false)
+    let [showCode, setShowCode] = useState('')
+    const navigate = useNavigate();
+    const [submissionHistory, setSubmissionHistory] = useState([]);
+    const [resultHistory, setResultHistory] = useState({});
     const [activeLeftTab, setActiveLeftTab] = useState('description');
     const [activeRightTab, setActiveRightTab] = useState('code');
     const [problem, setProblem] = useState(null);
@@ -20,29 +41,31 @@ function Problem() {
     const [selectedLanguage, setSelectedLanguage] = useState('javascript');
     const [code, setCode] = useState('');
     let { problemId } = useParams();
-    const {isAuthenticated}= useSelector(state => state.slice1)
+    const { isAuthenticated } = useSelector(state => state.slice1)
     const editorRef = useRef(null);
     // console.log(problemId)
-    const langMap= {
+    const langMap = {
         'javascript': 'JavaScript',
-        'java' : 'Java',
-        'c++' : 'C++'
+        'java': 'Java',
+        'c++': 'C++'
     }
-    useEffect(() =>{
-        if(!isAuthenticated){
+    useEffect(() => {
+        if (!isAuthenticated) {
             navigate('/login')
         }
-    },[isAuthenticated])
+    }, [isAuthenticated])
     useEffect(() => {
         const fetchProblem = async () => {
             setLoading(true);
             try {
-                const response = await axiosClient.get(`/problem/problemById/${problemId}`);
-                const initialCode= response?.data?.startCode?.find((lang) =>lang.language==langMap[selectedLanguage])?.initialCode
-                setProblem(response.data)
+                const { data } = await axiosClient.get(`/problem/problemById/${problemId}`);
+                console.log(data)
+                const initialCode = data?.startCode?.find((lang) => lang.language == langMap[selectedLanguage])?.initialCode
+                setProblem(data)
                 setCode(initialCode)
                 setLoading(false)
-                setTestCaseHistory(response?.data.visibleTestCases)
+                // setTestCaseHistory(data?.visibleTestCases)
+                // console.log(data?.visibleTestCases)
             } catch (err) {
                 console.error('Error fetching problem: ', err);
                 setLoading(false)
@@ -50,12 +73,12 @@ function Problem() {
         }
         fetchProblem();
     }, [problemId]);
-    useEffect(() =>{
-        if(problem){
-            const initialCode= problem?.startCode?.find((lang) => lang.language== langMap[selectedLanguage]).initialCode
+    useEffect(() => {
+        if (problem) {
+            const initialCode = problem?.startCode?.find((lang) => lang.language == langMap[selectedLanguage]).initialCode
             setCode(initialCode)
         }
-    },[selectedLanguage,problemId])
+    }, [selectedLanguage, problemId])
     function getDifficultyColor(difficulty) {
         switch (difficulty) {
             case 'easy': return 'text-green-500'
@@ -64,68 +87,101 @@ function Problem() {
             default: return 'text-gray-500'
         }
     }
-    function getLanguageForMonaco(lang){
-        switch(lang){
+    function getLanguageForMonaco(lang) {
+        switch (lang) {
             case 'javascript': return 'Javascript'
-            case 'cpp'  : return 'C++'
-            case 'java' : return 'Java'
-            default: return '' 
+            case 'cpp': return 'C++'
+            case 'java': return 'Java'
+            default: return ''
         }
     }
-    function handleEditorChange(value){
+    function handleEditorChange(value) {
         setCode(value || '')
     }
-    function handleEditorDidMount(editor){ // we are giving the instance of monaco editor 
-        editorRef.current= editor
+    function handleEditorDidMount(editor) { // we are giving the instance of monaco editor 
+        editorRef.current = editor
     }
 
     // Console
-    const showTestCases= () =>{
+    const showTestCases = () => {
         setActiveRightTab('testcase')
     }
-    
     // Run Code
-    async function runCode(code,lang) {
-        try{
-            const data={
+    async function runCode(code, lang) {
+        try {
+            const data = {
                 code,
                 lang
             }
             console.log(data)
-            const response= await axiosClient.post(`/submission/run/${problemId}`,data)
+            const response = await axiosClient.post(`/submission/run/${problemId}`, data)
             console.log(response?.data)
             alert('Code Run successfully')
             // setTestCaseHistory(response?.data)
             // setActiveRightTab('testcase')
-        }catch(err){
+        } catch (err) {
             return err.message;
         }
     }
     // Submission 
-    async function submitCode(code,language){
-        try{
-            const data= {
+    async function submitCode(code, language) {
+        try {
+            const data = {
                 code,
                 language
             }
-            const response= await axiosClient.post(`/submission/submit/${problemId}`,data)
+            const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
             console.log(response?.data)
-            setSubmissionHistory([...submissionHistory,response?.data])
+            setSubmissionHistory([...submissionHistory, response?.data])
             setResultHistory(response?.data)
             setActiveRightTab('result')
             setActiveLeftTab('Submissions')
             // alert('Problem Submitted successfully')
-        }catch(err){
+        } catch (err) {
             console.log(err.message)
         }
     }
-    if (loading)
+    useEffect(() => {
+        async function submittedProblem() {
+            try {
+                const { data } = await axiosClient.get(`/problem/submittedProblem/${problemId}`)
+                console.log()
+                if(typeof data === object){
+                    setSubmissionHistory(data)
+                }
+                console.log(submissionHistory)
+            } catch (err) {
+                return err.message
+            }
+        }
+        submittedProblem()
+    }, [problemId])
+
+    if (loading) {
         return (
             <div className="loading loading-spinner"></div>
         )
+    }
+    async function onSubmit(data) {
+        try {
+            console.log(data)
+            await axiosClient.put(`/problem/update/${problemId}`, {
+                problem,
+                hiddenTestCases: data
+            })
+            alert('Problem updated successfully')
+        } catch (err) {
+            console.log(err.message)
+        }
+    }
+    const getSubmittedCode = (data) => {
+        const update= data.replace('/\n/g','\n')
+        setViewCode(true)
+        setShowCode(update)
+    }
     return (
-        <div className="min-h-screen flex bg-base-100">
-            <div className="w-1/2 flex flex-col border-r border-base-300">
+        <div className="flex bg-base-100 min-h-screen ">
+            <div className="w-1/2 flex flex-col border-r border-base-300 ">
                 {/* Tab section */}
                 <div className="tabs tabs-bordered bg-base-200 px-4">
                     <button className={`tab ${activeLeftTab === 'description' ? 'tab-active' : ''}`}
@@ -211,27 +267,39 @@ function Problem() {
                                 <div>
                                     <h2 className="text-xl font-bold mb-4">My Submissions</h2>
                                     <div className=" p-3 rounded-2xl">
-                                        <div className="flex justify-around text-warning w-full bg-neutral-800">
+                                        {!viewCode ? ( <div className="flex justify-between text-warning w-full bg-neutral-800 p-1">
                                             <p>No</p>
                                             <h3>Status</h3>
                                             <h3>Language</h3>
                                             <h3>Runtime</h3>
-                                            <h3>Memory</h3> 
-                                            {/* <p>TCPassed/TotalTCPassed</p> */}
+                                            <h3>Memory</h3>
+                                            <p>Code</p>
                                         </div>
-                                        {
-                                            submissionHistory?.map((data,i) => (
-                                                
-                                                <div key={i} className="flex justify-around w-full text-accent bg-neutral-800">
-                                                    
-                                                    <p className="text-accent">{i + 1}</p>
+                                        ) : (
+                                            <div className="text-accent flex justify-between">
+                                                <h2>Submitted Code</h2>
+                                                <button onClick={() => setViewCode(false)} className="btn btn-accent">x</button>
+                                            </div>
+                                        )}
+                                        {!viewCode ? (
+                                            submissionHistory?.map((data, i) => (
+
+                                                <div key={i} className={`flex justify-between items-center w-full bg-neutral-800 p-1 text-accent`}>
+
+                                                    <p>{i + 1}</p>
                                                     <h3>{data?.status}</h3>
                                                     <h3>{data?.language}</h3>
                                                     <h3>{data?.runtime}</h3>
-                                                    <h3>{data?.memory}</h3> 
+                                                    <h3>{data?.memory}</h3>
+                                                    <button className="btn" onClick={() => getSubmittedCode(data?.code)}>View</button>
                                                 </div>
+
                                             ))
-                                        }
+                                        ) : (
+                                            <div className="bg-neutral-950 p-2 scrollbar-hidden ">
+                                                <pre className="whitespace-pre-wrap">{showCode}</pre>   
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -242,7 +310,7 @@ function Problem() {
                     )}
                 </div>
             </div>
-            <div className="w-1/2 flex flex-col min-h-screen">
+            <div className="w-1/2 flex flex-col overflow-hidden">
                 <div className="tabs tabs-bordered bg-base-200 px-4">
                     <button className={`tab ${activeRightTab === 'code' ? 'tab-active' : ''}`}
                         onClick={() => setActiveRightTab('code')}>Code</button>
@@ -255,11 +323,11 @@ function Problem() {
                     {activeRightTab === 'code' && (
                         <div className="flex-1 flex flex-col">
                             <div className="flex items-center gap-4 p-4 border-b border-base-300">
-                                {['javascript','java','c++'].map((lang) => (
+                                {['javascript', 'java', 'c++'].map((lang) => (
                                     <div className="flex" key={lang}>
-                                        <button className={`btn ${selectedLanguage===lang ? 'btn-sm btn-primary' : 'btn-sm btn-accent'}`}
-                                         onClick={() => setSelectedLanguage(lang)}>
-                                            {lang==='javascript' ? 'Javascript' : lang==='c++' ? 'C++' : 'Java'}
+                                        <button className={`btn ${selectedLanguage === lang ? 'btn-sm btn-primary' : 'btn-sm btn-accent'}`}
+                                            onClick={() => setSelectedLanguage(lang)}>
+                                            {lang === 'javascript' ? 'Javascript' : lang === 'c++' ? 'C++' : 'Java'}
                                         </button>
                                     </div>
                                 ))}
@@ -285,7 +353,7 @@ function Problem() {
                                         folding: true,
                                         lineDecorationsWidth: 11,
                                         lineNumbersMinChars: 3,
-                                        ColorDecorators : 'always',
+                                        ColorDecorators: 'always',
                                         renderLineHighlight: 'line',
                                         selectOnLineNumbers: true,
                                         roundedSelection: true,
@@ -300,30 +368,45 @@ function Problem() {
                             </div>
                             <div className="p-4 border-t border-base-300 flex justify-center gap-4">
                                 <button className="btn btn-ghost" onClick={() => showTestCases()}>Console</button>
-                                <button className="btn btn-ghost" onClick={() => runCode(code,selectedLanguage)}>Run</button>
-                                <button className="btn btn-ghost" onClick={() => submitCode(code,selectedLanguage)}>Submit</button>
+                                <button className="btn btn-ghost" onClick={() => runCode(code, selectedLanguage)}>Run</button>
+                                <button className="btn btn-ghost" onClick={() => submitCode(code, selectedLanguage)}>Submit</button>
                             </div>
                         </div>
                     )}
-                    {activeRightTab=== 'result' && (
-                                <div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
-                                    <h2>TestCase: {resultHistory?.testCasesPassed+'/'+resultHistory?.testCasesTotal}</h2>
-                                    <h3>Memory: {resultHistory?.memory}</h3>
-                                    <h3>Time: {resultHistory?.runtime}</h3>
-                                </div>
-                        )
-                    }
-                    {activeRightTab=== 'testcase' && 
-                    (
-                        <div className="text-white flex gap-3 items-center mt-10 ml-5 bg-neutral-950 p-3">
-                            {problem && testcaseHistory.map((testcase,index) =>(
-                                <div key={index}>
-                                    <button className="btn btn-sm btn-accent" onClick={() => setTestCaseTab(testcase)}>TestCase {index+1}</button>
-                                </div>
-                            ))} 
-                            <button className="btn-sm p-0"><IoIosAddCircle size={25}/></button>
+                    {activeRightTab === 'result' && (
+                        <div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
+                            <h2>TestCase: {resultHistory?.testCasesPassed + '/' + resultHistory?.testCasesTotal}</h2>
+                            <h3>Memory: {resultHistory?.memory}</h3>
+                            <h3>Time: {resultHistory?.runtime}</h3>
                         </div>
-                    )}
+                    )
+                    }
+                    {activeRightTab === 'testcase' && problem &&
+                        <form onSubmit={handleSubmit(onSubmit)} className="mt-4 ml-4 bg-neutral-950 p-4">
+                            {visibleFields.map((field, i) => (
+                                <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                                    <div>
+                                        <label className="label"><span className="label-text">Input</span></label>
+                                        <input className="input input-bordered w-full" {...register(`visibleTestCases.${i}.input`)} defaultValue={field.input} />
+                                    </div>
+                                    <div>
+                                        <label className="label"><span className="label-text">Output</span></label>
+                                        <input className="input input-bordered w-full" {...register(`visibleTestCases.${i}.output`)} defaultValue={field.output} />
+                                    </div>
+                                    <div>
+                                        <div className="mt-2 flex gap-2">
+                                            <button type="button" className="btn btn-xs btn-ghost" onClick={() => removeVisible(i)}>X</button>
+                                        </div>
+                                    </div>
+                                </div>))}
+                            {errors.visibleTestCases && <p className="text-sm text-error">{errors.visibleTestCases.message}</p>}
+                            <div>
+                                <button type="button" className="btn btn-sm" onClick={() => appendVisible({ input: "", output: "", explanation: "" })}>
+                                    <IoIosAddCircle size={25} /> Add TestCase
+                                </button>
+                            </div>
+                            <button type="submit" className="btn">Submit</button>
+                        </form>}
                 </div>
             </div>
         </div>
