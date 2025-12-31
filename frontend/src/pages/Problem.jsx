@@ -60,7 +60,7 @@ function Problem() {
             try {
                 const { data } = await axiosClient.get(`/problem/problemById/${problemId}`);
                 console.log(data)
-                const initialCode = data?.startCode?.find((lang) => lang.language == langMap[selectedLanguage])?.initialCode
+                const initialCode = data?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
                 setProblem(data)
                 setCode(initialCode)
                 setLoading(false)
@@ -75,7 +75,7 @@ function Problem() {
     }, [problemId]);
     useEffect(() => {
         if (problem) {
-            const initialCode = problem?.startCode?.find((lang) => lang.language == langMap[selectedLanguage]).initialCode
+            const initialCode = problem?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase()).initialCode
             setCode(initialCode)
         }
     }, [selectedLanguage, problemId])
@@ -332,7 +332,7 @@ function Problem() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 h-[500px]">
                                 <Editor
                                     height='100%'
                                     language={getLanguageForMonaco(selectedLanguage)}

@@ -13,9 +13,9 @@ import AdminUpdate from "./components/AdminUpdate";
 import UpdateProblem from "./components/UpdateProblem";
 import RouteNotExist from "./pages/RouteNotExist";
 import Profile from "./components/Profile";
+import ProfileNavigation from "./components/ProfileNavigation";
 
 function App() {
-
   const dispatch = useDispatch();
   const { isAuthenticated, user, loading } = useSelector((state) => state.slice1)
   useEffect(() => {
@@ -23,15 +23,16 @@ function App() {
   }, []); // empty indicates data will be loaded only once or if a value is present then whenever that data is changed.
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
-      <span className="loading loading-spinner loading-lg"></span>
-    </div>
+                <span className="loading loading-spinner loading-lg"></span>
+          </div>
   }
   return (
     <Routes>
       <Route path="*" element={isAuthenticated ? <Navigate to='/' /> : <RouteNotExist></RouteNotExist>}></Route>
       <Route path="/signup" element={!(isAuthenticated) ? <Signup /> : <Navigate to='/' />}></Route>
       <Route path="/login" element={!(isAuthenticated) ? <Login /> : <Navigate to='/' />}></Route>
-      <Route path="/" element={<Profile></Profile>}>
+      <Route path="/profile" element={!isAuthenticated ? <Navigate to='/login'/> : <Profile></Profile>}></Route>
+      <Route path="/" element={<ProfileNavigation></ProfileNavigation>}>
         <Route path="/" element={(isAuthenticated) ? <Homepage /> : <Navigate to='/signup'></Navigate>}></Route>
         <Route path="/admin"
           element={(isAuthenticated) && user?.role === 'admin' ? <AdminPanel /> : <Navigate to='/' />}

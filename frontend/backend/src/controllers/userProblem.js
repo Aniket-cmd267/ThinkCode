@@ -11,8 +11,8 @@ const createProblem = async (req, res) => {
   // console.log(req.body)
   try {
     for (const { language, completeCode } of referenceSolution) {
-
       const languageId = getLanguageById(language);
+      console.log(languageId)
       // I am creating Batch submission
       const submissions = visibleTestCases.map((testcase) => ({
         source_code: completeCode,
@@ -39,7 +39,9 @@ const createProblem = async (req, res) => {
     });
     res.status(201).send("Problem Saved Successfully");
   }
+    // res.status(201).send('Chal rahaa h')
   catch (err) {
+    console.log(err)
     res.status(400).send("Error: " + err);
   }
 }
