@@ -5,32 +5,60 @@ const Submission = require("../models/submission");
 
 const createProblem = async (req, res) => {
   const { title, description, difficulty, tags,
-    visibleTestCases, hiddenTestCases, startCode,
-    referenceSolution, problemCreator
+    visibleTestCases, hiddenTestCases, startCode, driverCode,
+    referenceSolution
   } = req.body;
-  // console.log(req.body)
+  // console.log(problemCreator)
+  // console.log(driverCode)
+  // console.log(referenceSolution)
   try {
-    for (const { language, completeCode } of referenceSolution) {
-      const languageId = getLanguageById(language);
-      console.log(languageId)
-      // I am creating Batch submission
-      const submissions = visibleTestCases.map((testcase) => ({
-        source_code: completeCode,
-        language_id: languageId,
-        stdin: testcase.input,
-        expected_output: testcase.output
-      }));
-      const submitResult = await submitBatch(submissions);
-      // console.log(submitResult);
-      const resultToken = submitResult.map((value) => value.token);
-      // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
-      const testResult = await submitToken(resultToken);
-      console.log(testResult);
-      for (const test of testResult) {
-        if (test.status_id != 3) {
-          console.log('Success: ', test)
-          return res.status(400).send("Error Occured");
+    for (const { lang, before, after } of driverCode) {
+      for (const { language, completeCode } of referenceSolution) {
+        if (lang.toLowerCase() !== language.toLowerCase()) {
+          continue;
         }
+        const solution = before + completeCode + after;
+        // console.log(solution)
+        const languageId = getLanguageById(language);
+        // console.log(languageId)
+        // I am creating Batch submission
+        const submissions = visibleTestCases.map((testcase) => ({
+          source_code: Buffer.from(solution).toString('base64'),
+          language_id: languageId,
+          stdin: Buffer.from(testcase.input).toString('base64')
+        }));
+        console.log(submissions)
+        const submitResult = await submitBatch(submissions);
+        console.log(submitResult);
+        const resultToken = submitResult.map((value) => value.token);
+        // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
+        console.log(resultToken)
+        const testResult = await submitToken(resultToken);
+        console.log(testResult);
+
+        for (const test of testResult) {
+          if (test.status.id <= 2) {
+            console.log(`Token ${test.token} is still processing...`);
+            continue;
+          }
+          if (test.status.id === 6) { // Status 6 is Compilation Error
+            const errorMessage = test.compile_output || ''
+            console.log("--- COMPILER ERROR ---");
+            console.log(Buffer.from(errorMessage, 'base64').toString('utf8'))
+
+            // Also decode the source code Judge0 thinks it received
+            const receivedCode = test.source_code || ''
+            console.log("--- CODE RECEIVED BY JUDGE ---");
+            console.log(Buffer.from(receivedCode, 'base64').toString('utf8'));
+          }
+          else if (test.status.id === 3) {
+            console.log("--- SUCCESS ---");
+            const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8') : "No Output";
+            console.log(output);
+          }
+        }
+        
+        
       }
     }
     const userProblem = await Problem.create({
@@ -39,7 +67,6 @@ const createProblem = async (req, res) => {
     });
     res.status(201).send("Problem Saved Successfully");
   }
-    // res.status(201).send('Chal rahaa h')
   catch (err) {
     console.log(err)
     res.status(400).send("Error: " + err);
@@ -83,7 +110,7 @@ const updateProblem = async (req, res) => {
 
       const testResult = await submitToken(resultToken);
 
-       console.log(testResult);
+      console.log(testResult);
       for (const test of testResult) {
         if (test.status_id != 3) {
           return res.status(400).send("Error Occured");
@@ -124,7 +151,7 @@ const getProblemById = async (req, res) => {
   try {
     if (!id)
       return res.status(400).send("ID is Missing");
-    const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution ');
+    const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution driverCode');
     if (!getProblem)
       return res.status(404).send("Problem is Missing");
     res.status(200).send(getProblem);
@@ -146,7 +173,7 @@ const getAllProblem = async (req, res) => {
   }
 }
 
-const  solvedAllProblembyUser = async (req, res) => {
+const solvedAllProblembyUser = async (req, res) => {
 
   try {
 

@@ -17,7 +17,7 @@ const problemSchema = new Schema({
         },
         tags:{
             type:String,
-            enum:['array','linkedList','graph','dp'],
+            enum:['array','string','tree', 'linkedList','graph','dp'],
             required:true
         },
         visibleTestCases:[
@@ -31,12 +31,10 @@ const problemSchema = new Schema({
                     required:true,
                 },
                 explanation:{
-                    type:String,
-                    required:true
+                    type:String
                 }
             }
         ],
-
         hiddenTestCases:[
             {
                 input:{
@@ -49,7 +47,6 @@ const problemSchema = new Schema({
                 }
             }
         ],
-
         startCode: [
             {
                 language:{
@@ -62,7 +59,22 @@ const problemSchema = new Schema({
                 }
             }
         ],
-
+        driverCode: [
+            {
+                lang: {
+                    type: String,
+                    required: true
+                },
+                before: {
+                    type: String,
+                    required: true
+                },
+                after: {
+                    type: String,
+                    required: true
+                }
+            }
+        ],
         referenceSolution:[
             {
                 language:{

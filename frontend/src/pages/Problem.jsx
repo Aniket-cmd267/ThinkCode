@@ -107,15 +107,19 @@ function Problem() {
         setActiveRightTab('testcase')
     }
     // Run Code
-    async function runCode(code, lang) {
+    async function runCode(code, lang, driverCode) {
         try {
+            const driverBefore= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
+            const driverAfter= driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after
+            // console.log("Hello",driverBefore,"World", driverAfter)
+            const fullCode= driverBefore + code + driverAfter
+            console.log(fullCode)
             const data = {
-                code,
+                fullCode,
                 lang
-            }
-            console.log(data)
-            const response = await axiosClient.post(`/submission/run/${problemId}`, data)
-            console.log(response?.data)
+            }                              
+            // const response = await axiosClient.post(`/submission/run/${problemId}`, data)
+            // console.log(response?.data)
             alert('Code Run successfully')
             // setTestCaseHistory(response?.data)
             // setActiveRightTab('testcase')
@@ -126,9 +130,14 @@ function Problem() {
     // Submission 
     async function submitCode(code, language) {
         try {
+            const driverBefore= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
+            const driverAfter= driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after
+            // console.log("Hello",driverBefore,"World", driverAfter)
+            const fullCode= driverBefore + code + driverAfter
+            console.log(fullCode)
             const data = {
-                code,
-                language
+                fullCode,
+                lang
             }
             const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
             console.log(response?.data)
@@ -368,7 +377,7 @@ function Problem() {
                             </div>
                             <div className="p-4 border-t border-base-300 flex justify-center gap-4">
                                 <button className="btn btn-ghost" onClick={() => showTestCases()}>Console</button>
-                                <button className="btn btn-ghost" onClick={() => runCode(code, selectedLanguage)}>Run</button>
+                                <button className="btn btn-ghost" onClick={() => runCode(code, selectedLanguage, problem.driverCode)}>Run</button>
                                 <button className="btn btn-ghost" onClick={() => submitCode(code, selectedLanguage)}>Submit</button>
                             </div>
                         </div>
