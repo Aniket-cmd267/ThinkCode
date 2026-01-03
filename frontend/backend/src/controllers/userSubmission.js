@@ -7,8 +7,8 @@ const submitCode = async (req, res) => {
   try {
     const userId = req.result._id;
     const problemId = req.params.id;
-    const { code, language } = req.body;
-    if (!userId || !code || !problemId || !language)
+    const { code, fullCode, lang } = req.body;
+    if (!userId || !fullCode || !problemId || !lang || !code)
       return res.status(400).send("Some field missing");
     //    Fetch the problem from database
     const problem = await Problem.findById(problemId);
@@ -18,17 +18,18 @@ const submitCode = async (req, res) => {
       userId,
       problemId,
       code,
-      language,
+      lang,
       status: 'pending',
       testCasesTotal: problem.hiddenTestCases.length
     })
     //    Judge0 code ko submit karna hai
-    const languageId = getLanguageById(language);
+    const languageId = getLanguageById(lang);
     const submissions = problem.hiddenTestCases.map((testcase) => ({
-      source_code: code,
+      // source_code: Buffer.from(fullCode).toString('base64'),
+      source_code: fullCode,
       language_id: languageId,
-      stdin: testcase.input,
-      expected_output: testcase.output
+      // stdin: Buffer.from(testcase.input).toString('base64'),
+      stdin: testcase.input
     }));
     const submitResult = await submitBatch(submissions);
     const resultToken = submitResult.map((value) => value.token);
@@ -39,8 +40,6 @@ const submitCode = async (req, res) => {
     let memory = 0;
     let status = 'accepted';
     let errorMessage = null;
-
-
     for (const test of testResult) {
       if (test.status_id == 3) {
         testCasesPassed++;
@@ -63,39 +62,32 @@ const submitCode = async (req, res) => {
     submittedResult.errorMessage = errorMessage;
     submittedResult.runtime = runtime;
     submittedResult.memory = memory;
-
     await submittedResult.save();
-
     // ProblemId ko insert karenge userSchema ke problemSolved mein if it is not persent there.
-
     // req.result == user Information
-
     if (!req.result.problemSolved.includes(problemId)) {
       req.result.problemSolved.push(problemId);
       await req.result.save();
     }
-
     res.status(201).send(submittedResult);
-
   }
   catch (err) {
     res.status(500).send("Internal Server Error " + err);
   }
 
 }
-
-
 const runCode = async (req, res) => {
   // 
   try {
+    let count=0;
     const userId = req.result._id;
     const id = req.params.id;
     // console.log(req.params)
     console.log(userId)
     console.log(id)
-    const { code, lang } = req.body;
+    const { fullCode, lang } = req.body;
     console.log(lang)
-    if (!userId || !code || !id || !lang){
+    if (!userId || !fullCode || !id || !lang) {
       return res.status(400).send("Some field missing");
     }
     //    Fetch the problem from database
@@ -107,17 +99,33 @@ const runCode = async (req, res) => {
     const languageId = getLanguageById(lang);
     console.log(languageId)
     const submissions = problem.visibleTestCases.map((testcase) => ({
-      source_code: code,
+      source_code: Buffer.from(fullCode).toString('base64'),
       language_id: languageId,
-      stdin: testcase.input,
-      expected_output: testcase.output
+      stdin: Buffer.from(testcase.input).toString('base64')
     }));
     const submitResult = await submitBatch(submissions);
     console.log(submitBatch)
     const resultToken = submitResult.map((value) => value.token);
     const testResult = await submitToken(resultToken);
     console.log(testResult)
-
+    for(const test of testResult) {
+      if(test.status.id === 6) {
+        const compileError = Buffer.from(test.compile_output, 'base64').toString('utf8');
+        
+        console.log(compileError);
+      }
+    }
+    problem.visibleTestCases.forEach((testcase, index) =>{
+        const test= testResult[index]
+        const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output"
+        if(testcase.output.trim()=== output){
+          count++
+        }
+    })
+    console.log(count)
+    if(count != (problem.visibleTestCases.length)){
+      throw new Error('Problem in the testcases')
+    }
     res.status(201).send(testResult);
   }
   catch (err) {

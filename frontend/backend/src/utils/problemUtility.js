@@ -56,7 +56,7 @@ const submitToken = async (resultToken) => {
     params: {
       tokens: resultToken.join(","),
       base64_encoded: 'true',
-      fields: 'token,stdout,stderr,status,compile_output,source_code'
+      fields: 'token,stdout,stderr,status,compile_output,source_code,stdin'
     },
     headers: {
       'x-rapidapi-key': '399441a3f3msh7cbd869b0d16040p1465b8jsne2000970e27e',

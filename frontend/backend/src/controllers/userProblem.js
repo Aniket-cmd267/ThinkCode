@@ -12,6 +12,7 @@ const createProblem = async (req, res) => {
   // console.log(driverCode)
   // console.log(referenceSolution)
   try {
+    let count=0;
     for (const { lang, before, after } of driverCode) {
       for (const { language, completeCode } of referenceSolution) {
         if (lang.toLowerCase() !== language.toLowerCase()) {
@@ -27,14 +28,14 @@ const createProblem = async (req, res) => {
           language_id: languageId,
           stdin: Buffer.from(testcase.input).toString('base64')
         }));
-        console.log(submissions)
+        // console.log(submissions)
         const submitResult = await submitBatch(submissions);
-        console.log(submitResult);
+        // console.log(submitResult);
         const resultToken = submitResult.map((value) => value.token);
         // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
-        console.log(resultToken)
+        // console.log(resultToken)
         const testResult = await submitToken(resultToken);
-        console.log(testResult);
+        // console.log(testResult);
 
         for (const test of testResult) {
           if (test.status.id <= 2) {
@@ -53,13 +54,38 @@ const createProblem = async (req, res) => {
           }
           else if (test.status.id === 3) {
             console.log("--- SUCCESS ---");
-            const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8') : "No Output";
-            console.log(output);
+            console.log(test)
           }
         }
         
-        
+        // for(let testCase of visibleTestCases){
+        //   for(let test of testResult){
+        //     const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output";
+        //     const input= test.stdin ? Buffer.from(test.stdin, 'base64').toString('utf8').trim() : 'No Input'
+        //     console.log(input.toLowerCase())
+        //     console.log(output.toLowerCase());
+        //     console.log(language)
+        //     console.log(testCase.output.toLowerCase())
+        //     console.log(testCase.input.toLowerCase())
+        //     if(testCase.output.toLowerCase().trim()=== output.toLowerCase() && testCase.input.toLowerCase().trim()=== input.toLowerCase()){
+        //       console.log(language)
+        //       count++;
+        //       break;
+        //     }
+        //   }
+        // }
+        visibleTestCases.forEach((testcase, index) =>{
+          const test= testResult[index]
+          const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output"
+          if(testcase.output.trim()=== output){
+            count++;
+          }
+        })
       }
+    }
+    console.log(count)
+    if(count != 3*(visibleTestCases.length)){
+      throw new Error('Problem in the testcases')
     }
     const userProblem = await Problem.create({
       ...req.body,

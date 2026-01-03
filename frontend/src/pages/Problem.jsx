@@ -110,7 +110,7 @@ function Problem() {
     async function runCode(code, lang, driverCode) {
         try {
             const driverBefore= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
-            const driverAfter= driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after
+            const driverAfter= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after}\n`
             // console.log("Hello",driverBefore,"World", driverAfter)
             const fullCode= driverBefore + code + driverAfter
             console.log(fullCode)
@@ -118,9 +118,14 @@ function Problem() {
                 fullCode,
                 lang
             }                              
-            // const response = await axiosClient.post(`/submission/run/${problemId}`, data)
-            // console.log(response?.data)
-            alert('Code Run successfully')
+            const response = await axiosClient.post(`/submission/run/${problemId}`, data)
+            console.log(response?.data)
+            if(response?.data[0].status.id=== 3){
+                alert('Code Run successfully')
+            }
+            else{
+                alert(`${response?.data[0]?.status.description}`)
+            }
             // setTestCaseHistory(response?.data)
             // setActiveRightTab('testcase')
         } catch (err) {
@@ -128,19 +133,23 @@ function Problem() {
         }
     }
     // Submission 
-    async function submitCode(code, language) {
+    async function submitCode(code, lang) {
         try {
-            const driverBefore= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
-            const driverAfter= driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after
+            const driverBefore= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
+            const driverAfter= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after}`
             // console.log("Hello",driverBefore,"World", driverAfter)
             const fullCode= driverBefore + code + driverAfter
             console.log(fullCode)
             const data = {
+                code,
                 fullCode,
                 lang
             }
             const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
             console.log(response?.data)
+            if(response?.data[0].status.id=== 3){
+                
+            }
             setSubmissionHistory([...submissionHistory, response?.data])
             setResultHistory(response?.data)
             setActiveRightTab('result')
