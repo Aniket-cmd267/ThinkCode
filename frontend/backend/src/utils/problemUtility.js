@@ -56,7 +56,7 @@ const submitToken = async (resultToken) => {
     params: {
       tokens: resultToken.join(","),
       base64_encoded: 'true',
-      fields: 'token,stdout,stderr,status,compile_output,source_code,stdin'
+      fields: 'token,stdout,stderr,status,compile_output,source_code,stdin,time,memory'
     },
     headers: {
       'x-rapidapi-key': '399441a3f3msh7cbd869b0d16040p1465b8jsne2000970e27e',
@@ -81,13 +81,13 @@ const submitToken = async (resultToken) => {
     const IsResultObtained = result.submissions.every((r) => r.status.id > 2);
 
     if (IsResultObtained){
-      result.submissions.forEach((sub,i) => {
-        const actual= sub.stdout ? Buffer.from(sub.stdout, 'base64').toString('utf-8').trim() : '';
-        const expected= sub.expected_output ? Buffer.from(sub.expected_output, 'base64').toString('utf-8').trim() : '';
-        console.log(`Test Case ${i+1}`)
-        console.log(`Actual : "${actual}"`)
-        console.log(`Expected: ${expected}`)
-      })
+      // result.submissions.forEach((sub,i) => {
+      //   const actual= sub.stdout ? Buffer.from(sub.stdout, 'base64').toString('utf-8').trim() : '';
+      //   const expected= sub.expected_output ? Buffer.from(sub.expected_output, 'base64').toString('utf-8').trim() : '';
+      //   console.log(`Test Case ${i+1}`)
+      //   console.log(`Actual : "${actual}"`)
+      //   console.log(`Expected: ${expected}`)
+      // })
       return result.submissions;
     }
     console.log("Not ready yet... sleeping.");

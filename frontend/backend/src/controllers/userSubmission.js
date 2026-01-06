@@ -1,6 +1,5 @@
 const Problem = require("../models/problem");
 const Submission = require("../models/submission");
-const User = require("../models/user");
 const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility");
 
 const submitCode = async (req, res) => {
@@ -18,35 +17,50 @@ const submitCode = async (req, res) => {
       userId,
       problemId,
       code,
-      lang,
+      language:lang,
       status: 'pending',
       testCasesTotal: problem.hiddenTestCases.length
     })
     //    Judge0 code ko submit karna hai
     const languageId = getLanguageById(lang);
     const submissions = problem.hiddenTestCases.map((testcase) => ({
-      // source_code: Buffer.from(fullCode).toString('base64'),
-      source_code: fullCode,
+      source_code: Buffer.from(fullCode).toString('base64'),
       language_id: languageId,
-      // stdin: Buffer.from(testcase.input).toString('base64'),
-      stdin: testcase.input
+      stdin: Buffer.from(testcase.input).toString('base64')
     }));
     const submitResult = await submitBatch(submissions);
     const resultToken = submitResult.map((value) => value.token);
+    console.log(resultToken)
     const testResult = await submitToken(resultToken);
+    // console.log(testResult)
+    
     // submittedResult ko update karo
     let testCasesPassed = 0;
     let runtime = 0;
     let memory = 0;
     let status = 'accepted';
     let errorMessage = null;
+    let count= 0;
+    problem.hiddenTestCases.forEach((testcase, index) =>{
+        const test= testResult[index]
+        const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output"
+        if(testcase.output.trim()=== output){
+          count++
+        }
+    })
+    console.log(count)
+    if(count != (problem.hiddenTestCases.length)){
+      throw new Error('Problem in the testcases')
+    }
     for (const test of testResult) {
-      if (test.status_id == 3) {
+      if (test.status.id == 3) {
         testCasesPassed++;
+        console.log(test.time)
+        console.log(test)
         runtime = runtime + parseFloat(test.time)
         memory = Math.max(memory, test.memory);
       } else {
-        if (test.status_id == 4) {
+        if (test.status.id == 4) {
           status = 'error'
           errorMessage = test.stderr
         }
@@ -56,7 +70,12 @@ const submitCode = async (req, res) => {
         }
       }
     }
+    if(count=== testCasesPassed){
+      submittedResult.status = 'accepted';
+    }
+    
     // Store the result in Database in Submission
+
     submittedResult.status = status;
     submittedResult.testCasesPassed = testCasesPassed;
     submittedResult.errorMessage = errorMessage;
@@ -69,12 +88,12 @@ const submitCode = async (req, res) => {
       req.result.problemSolved.push(problemId);
       await req.result.save();
     }
-    res.status(201).send(submittedResult);
+    return res.status(201).send(submittedResult);
   }
   catch (err) {
-    res.status(500).send("Internal Server Error " + err);
+    console.log(err)
+    return res.status(500).send("Internal Server Error " + err);
   }
-
 }
 const runCode = async (req, res) => {
   // 

@@ -136,7 +136,7 @@ function Problem() {
     async function submitCode(code, lang) {
         try {
             const driverBefore= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
-            const driverAfter= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after}`
+            const driverAfter= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after}\n`
             // console.log("Hello",driverBefore,"World", driverAfter)
             const fullCode= driverBefore + code + driverAfter
             console.log(fullCode)
@@ -146,9 +146,10 @@ function Problem() {
                 lang
             }
             const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
+            console.log(response)
             console.log(response?.data)
-            if(response?.data[0].status.id=== 3){
-                
+            if(response?.data?.status=== 'accepted'){
+                alert('Problem solved successfully')
             }
             setSubmissionHistory([...submissionHistory, response?.data])
             setResultHistory(response?.data)
@@ -301,14 +302,13 @@ function Problem() {
                                         )}
                                         {!viewCode ? (
                                             submissionHistory?.map((data, i) => (
-
                                                 <div key={i} className={`flex justify-between items-center w-full bg-neutral-800 p-1 text-accent`}>
 
                                                     <p>{i + 1}</p>
                                                     <h3>{data?.status}</h3>
                                                     <h3>{data?.language}</h3>
-                                                    <h3>{data?.runtime}</h3>
-                                                    <h3>{data?.memory}</h3>
+                                                    <h3>{data?.runtime+' s'}</h3>
+                                                    <h3>{data?.memory+' kb'}</h3>
                                                     <button className="btn" onClick={() => getSubmittedCode(data?.code)}>View</button>
                                                 </div>
 
