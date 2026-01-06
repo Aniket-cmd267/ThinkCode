@@ -391,12 +391,17 @@ function Problem() {
                             </div>
                         </div>
                     )}
-                    {activeRightTab === 'result' && (
-                        <div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
+                    {activeRightTab === 'result' &&  
+                    (Object.keys(resultHistory).length !== 0 ? 
+                        (<div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
                             <h2>TestCase: {resultHistory?.testCasesPassed + '/' + resultHistory?.testCasesTotal}</h2>
                             <h3>Memory: {resultHistory?.memory}</h3>
                             <h3>Time: {resultHistory?.runtime}</h3>
-                        </div>
+                        </div>) : (
+                            <div className="flex justify-center items-center min-h-screen font-bold text-primary">
+                                <h1>Submit problem first</h1>
+                            </div>
+                        )
                     )
                     }
                     {activeRightTab === 'testcase' && problem &&

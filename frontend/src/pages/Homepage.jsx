@@ -10,15 +10,14 @@ function Homepage() {
   // const handleLogout= () =>{
   //   dispatch(logoutUser());
   // }
-  
   const [problems, setProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
+  const [search, setSearch]= useState('')
   const [filters, setFilters] = useState({
     difficulty: 'all',
     tag: 'all',
     status: 'all' 
   });
-
   useEffect(() => {
     const fetchProblems = async () => {
       try {
@@ -45,56 +44,64 @@ function Homepage() {
   const filteredProblems = problems.filter(problem => {
     const difficultyMatch = filters.difficulty === 'all' || problem.difficulty === filters.difficulty;
     const tagMatch = filters.tag === 'all' || problem.tags === filters.tag;
-    const statusMatch = filters.status === 'all' || 
-                      solvedProblems.some(sp => sp._id === problem._id);
-    return difficultyMatch && tagMatch && statusMatch;
+    const statusMatch = filters.status === 'all' || solvedProblems.some(sp => sp._id === problem._id);
+    const searchProblem= problem.title.toLowerCase().includes(search)
+    return difficultyMatch && tagMatch && statusMatch && searchProblem;
   });
-  
+  function handleChange(e){
+    console.log(e)
+    const {name, value}= e.target
+    setFilters((prev) =>({
+      ...prev,
+      [name] : value
+    }))
+  }
+  function handleSearch(e){
+    setSearch(e.target.value)
+  }
   return (
     <div className="min-h-screen bg-base-200">
-      
-
       <div className="p-6">
         <div className="flex flex-wrap items-center gap-4">
           <div className="form-control">
             <label className="label hidden">Problem set</label>
-            <select className="select select-bordered w-48">
-              <option>All Problems</option>
-              <option>Solved Problems</option>
+            <select className="select select-bordered w-48" value={filters.status} onChange={handleChange} name='status'>
+              <option value='all'>All Problems</option>
+              <option value='solved problems'>Solved Problems</option>
             </select>
           </div>
 
           <div className="form-control">
             <label className="label hidden">Difficulty</label>
-            <select className="select select-bordered w-40">
-              <option>All Difficulties</option>
-              <option>Easy</option>
-              <option>Medium</option>
-              <option>Hard</option>
+            <select className="select select-bordered w-40" onChange={handleChange} value={filters.difficulty} name='difficulty'>
+              <option value='all'>All Difficulties</option>
+              <option value='easy'>Easy</option>
+              <option value='medium'>Medium</option>
+              <option value='hard'>Hard</option>
             </select>
           </div>
 
           <div className="form-control">
             <label className="label hidden">Tags</label>
-            <select className="select select-bordered w-56">
-              <option>All tags</option>
-              <option>Array</option>
-              <option>LinkedList</option>
-              <option>String</option>
-              <option>Trees</option>
-              <option>Graph</option>
+            <select className="select select-bordered w-56" onChange={handleChange} value={filters.tag} name='tag'>
+              <option value='all'>All tags</option>
+              <option value='array'>Array</option>
+              <option value='linkedlist'>LinkedList</option>
+              <option value='trees'>Trees</option>
+              <option value='string'>String</option>
+              <option value='graph'>Graph</option>
             </select>
           </div>
 
           <div className="form-control">
             <label className="label hidden">Search</label>
-            <input type="text" placeholder="Search problems..." className="input input-bordered w-64" />
+            <input type="text" placeholder="Search problems..." className="input input-bordered w-64" value={search} onChange={handleSearch}/>
           </div>
-
+{/* 
           <div className="flex items-center gap-2">
             <button className="btn btn-primary">Apply</button>
             <button className="btn btn-ghost">Reset</button>
-          </div>
+          </div> */}
         </div>
       </div>
 
