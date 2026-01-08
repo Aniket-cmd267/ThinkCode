@@ -3,12 +3,19 @@ import axiosClient from "../utils/axiosClient";
 import { useNavigate, useParams } from "react-router";
 import Editor from '@monaco-editor/react';
 import { useRef } from "react";
-import ChatAi from "./ChatAi";
-import { useSelector } from "react-redux"
+import ChatAi from "./editorPage/ChatAi";
+import { useDispatch, useSelector } from "react-redux"
 import { IoIosAddCircle } from "react-icons/io";
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
+import debounce from 'lodash.debounce';
+import { getCodeWrittenOnEditor, changeLoadState } from '../store/editorSlice'
+import Description from "./editorPage/Description";
+import Editorial from "./editorPage/Editorial";
+import Solutions from "./editorPage/Solutions";
+import Submissions from "./editorPage/Submissions";
+
 
 const TestCaseSchema = z.object({
     visibleTestCases: z.array(
@@ -19,6 +26,13 @@ const TestCaseSchema = z.object({
     )
 })
 function Problem() {
+    const navigate= useNavigate();
+    const debouncedSave = useRef(
+        debounce(({ selectedLanguage, value }) => {
+            dispatch(getCodeWrittenOnEditor({ selectedLanguage, value }));
+        }, 1000)
+    ).current;
+    const dispatch = useDispatch()
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
         resolver: zodResolver(TestCaseSchema),
         defaultValue: {
@@ -29,9 +43,6 @@ function Problem() {
         control,
         name: "visibleTestCases",
     });
-    const [viewCode, setViewCode] = useState(false)
-    let [showCode, setShowCode] = useState('')
-    const navigate = useNavigate();
     const [submissionHistory, setSubmissionHistory] = useState([]);
     const [resultHistory, setResultHistory] = useState({});
     const [activeLeftTab, setActiveLeftTab] = useState('description');
@@ -39,9 +50,14 @@ function Problem() {
     const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState('javascript');
-    const [code, setCode] = useState('');
+    const {isAuthenticated}= useSelector(state => state.slice1)
+    const [code, setCode] = useState({
+        'c++': '',
+        'java': '',
+        'javascript': ''
+    });
     let { problemId } = useParams();
-    const { isAuthenticated } = useSelector(state => state.slice1)
+    const { load, updatedCode } = useSelector(state => state.slice2)
     const editorRef = useRef(null);
     // console.log(problemId)
     const langMap = {
@@ -49,11 +65,11 @@ function Problem() {
         'java': 'Java',
         'c++': 'C++'
     }
-    useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login')
+    useEffect(() =>{
+        if(!isAuthenticated){
+            navigate('/')
         }
-    }, [isAuthenticated])
+    },[isAuthenticated])
     useEffect(() => {
         const fetchProblem = async () => {
             setLoading(true);
@@ -62,7 +78,10 @@ function Problem() {
                 console.log(data)
                 const initialCode = data?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
                 setProblem(data)
-                setCode(initialCode)
+                setCode(prevState => ({
+                    ...prevState,
+                    [selectedLanguage]: initialCode
+                }))
                 setLoading(false)
                 // setTestCaseHistory(data?.visibleTestCases)
                 // console.log(data?.visibleTestCases)
@@ -75,18 +94,27 @@ function Problem() {
     }, [problemId]);
     useEffect(() => {
         if (problem) {
-            const initialCode = problem?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase()).initialCode
-            setCode(initialCode)
+            const initialCode = problem?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
+            const codeSetInMonaco = () => {
+                setCode((prevState) => ({
+                    ...prevState,
+                    [selectedLanguage]: initialCode
+                }))
+            }
+            codeSetInMonaco()
         }
     }, [selectedLanguage, problemId])
-    function getDifficultyColor(difficulty) {
-        switch (difficulty) {
-            case 'easy': return 'text-green-500'
-            case 'medium': return 'text-yellow-500'
-            case 'hard': return 'text-red-300'
-            default: return 'text-gray-500'
+    useEffect(() => {
+        if (load) {
+            console.log(updatedCode)
+            setCode((prevState) => ({
+                ...prevState,
+                [selectedLanguage]: updatedCode
+            }))
+            // console.log(code)
+            dispatch(changeLoadState())
         }
-    }
+    }, [load])
     function getLanguageForMonaco(lang) {
         switch (lang) {
             case 'javascript': return 'Javascript'
@@ -96,12 +124,18 @@ function Problem() {
         }
     }
     function handleEditorChange(value) {
-        setCode(value || '')
+        // console.log(value)
+        // console.log(selectedLanguage)
+        setCode((prevState) => ({
+            ...prevState,
+            [selectedLanguage]: value
+        }))
+        debouncedSave({ selectedLanguage, value })
+        // console.log(code)
     }
     function handleEditorDidMount(editor) { // we are giving the instance of monaco editor 
         editorRef.current = editor
     }
-
     // Console
     const showTestCases = () => {
         setActiveRightTab('testcase')
@@ -109,21 +143,21 @@ function Problem() {
     // Run Code
     async function runCode(code, lang, driverCode) {
         try {
-            const driverBefore= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
-            const driverAfter= `${driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after}\n`
+            const driverBefore = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
+            const driverAfter = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
             // console.log("Hello",driverBefore,"World", driverAfter)
-            const fullCode= driverBefore + code + driverAfter
+            const fullCode = driverBefore + code + driverAfter
             console.log(fullCode)
             const data = {
                 fullCode,
                 lang
-            }                              
+            }
             const response = await axiosClient.post(`/submission/run/${problemId}`, data)
             console.log(response?.data)
-            if(response?.data[0].status.id=== 3){
+            if (response?.data[0].status.id === 3) {
                 alert('Code Run successfully')
             }
-            else{
+            else {
                 alert(`${response?.data[0]?.status.description}`)
             }
             // setTestCaseHistory(response?.data)
@@ -135,10 +169,10 @@ function Problem() {
     // Submission 
     async function submitCode(code, lang) {
         try {
-            const driverBefore= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.before}\n`
-            const driverAfter= `${problem?.driverCode?.find((obj)=> obj.lang.toLowerCase()== lang.toLowerCase())?.after}\n`
+            const driverBefore = `${problem?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
+            const driverAfter = `${problem?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
             // console.log("Hello",driverBefore,"World", driverAfter)
-            const fullCode= driverBefore + code + driverAfter
+            const fullCode = driverBefore + code + driverAfter
             console.log(fullCode)
             const data = {
                 code,
@@ -148,7 +182,7 @@ function Problem() {
             const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
             console.log(response)
             console.log(response?.data)
-            if(response?.data?.status=== 'accepted'){
+            if (response?.data?.status === 'accepted') {
                 alert('Problem solved successfully')
             }
             setSubmissionHistory([...submissionHistory, response?.data])
@@ -160,12 +194,12 @@ function Problem() {
             console.log(err.message)
         }
     }
-    useEffect(() => {
+    useEffect(() => {  // All submissions made till now by same user for same problem fetch all 
         async function submittedProblem() {
             try {
                 const { data } = await axiosClient.get(`/problem/submittedProblem/${problemId}`)
                 console.log()
-                if(typeof data === object){
+                if (typeof data === object) {
                     setSubmissionHistory(data)
                 }
                 console.log(submissionHistory)
@@ -193,11 +227,6 @@ function Problem() {
             console.log(err.message)
         }
     }
-    const getSubmittedCode = (data) => {
-        const update= data.replace('/\n/g','\n')
-        setViewCode(true)
-        setShowCode(update)
-    }
     return (
         <div className="flex bg-base-100 min-h-screen ">
             <div className="w-1/2 flex flex-col border-r border-base-300 ">
@@ -224,102 +253,16 @@ function Problem() {
                     {problem && (
                         <>
                             {activeLeftTab === 'description' && (
-                                <div>
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <h1 className="text-2xl font-bold">{problem.title}</h1>
-                                        <div className={`badge badge-outline ${getDifficultyColor(problem.difficulty)}`}>
-                                            {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
-                                        </div>
-                                        <div className="badge badge-primary">{problem.tags.charAt(0).toUpperCase() + problem.tags.slice(1)}</div>
-                                    </div>
-
-                                    <div className="whitespace-pre-wrap leading-relaxed">{problem.description}</div>
-
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-4">Examples: </h3>
-                                        <div className="space-y-4">
-                                            {problem.visibleTestCases.map((example, index) => (
-                                                <div key={index} className="bg-base-200 p-4 rounded-lg">
-                                                    <h4 className="font-semibold mb-2">Example {index + 1}:</h4>
-                                                    <div className="space-y-2 text-sm font-mono">
-                                                        <div><strong>Input:</strong> {example.input}</div>
-                                                        <div><strong>Output:</strong> {example.output}</div>
-                                                        <div><strong>Explanation:</strong> {example.explanation}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
+                                <Description problem={problem} />
                             )}
                             {activeLeftTab === 'Editorial' && (
-                                <div>
-                                    <div className="prose max-w-none">
-                                        <h2 className="text-xl font-bold mb-4">Editorial</h2>
-                                        <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                                            {'Editorial is here for the problem'}
-                                        </div>
-                                    </div>
-                                </div>
+                                <Editorial />
                             )}
                             {activeLeftTab === 'Solutions' && (
-                                <div>
-                                    <h2 className="text-xl font-bold mb-4">Solutions</h2>
-                                    <div className="space-y-6">
-                                        {problem.referenceSolution?.map((solution, index) => (
-                                            <div key={index} className="border border-base-300 rounded-lg">
-                                                <div className="bg-base-200 px-4 py-2 rounded-t-lg">
-                                                    <h3 className="font-semibold">{problem?.title} - {solution?.language}</h3>
-                                                </div>
-                                                <div className="p-4">
-                                                    {/* <p className="bg-base-300 p-4 rounded text-sm overflow-x-auto">{solution?.completeCode}</p> */}
-                                                    <pre className="bg-base-300 p-4 rounded text-sm overflow-x-auto">{solution?.completeCode}</pre>
-                                                </div>
-
-                                            </div>
-
-                                        ))}
-                                    </div>
-                                </div>
+                                <Solutions problem={problem} />
                             )}
                             {activeLeftTab === 'Submissions' && (
-                                <div>
-                                    <h2 className="text-xl font-bold mb-4">My Submissions</h2>
-                                    <div className=" p-3 rounded-2xl">
-                                        {!viewCode ? ( <div className="flex justify-between text-warning w-full bg-neutral-800 p-1">
-                                            <p>No</p>
-                                            <h3>Status</h3>
-                                            <h3>Language</h3>
-                                            <h3>Runtime</h3>
-                                            <h3>Memory</h3>
-                                            <p>Code</p>
-                                        </div>
-                                        ) : (
-                                            <div className="text-accent flex justify-between">
-                                                <h2>Submitted Code</h2>
-                                                <button onClick={() => setViewCode(false)} className="btn btn-accent">x</button>
-                                            </div>
-                                        )}
-                                        {!viewCode ? (
-                                            submissionHistory?.map((data, i) => (
-                                                <div key={i} className={`flex justify-between items-center w-full bg-neutral-800 p-1 text-accent`}>
-
-                                                    <p>{i + 1}</p>
-                                                    <h3>{data?.status}</h3>
-                                                    <h3>{data?.language}</h3>
-                                                    <h3>{data?.runtime+' s'}</h3>
-                                                    <h3>{data?.memory+' kb'}</h3>
-                                                    <button className="btn" onClick={() => getSubmittedCode(data?.code)}>View</button>
-                                                </div>
-
-                                            ))
-                                        ) : (
-                                            <div className="bg-neutral-950 p-2 scrollbar-hidden ">
-                                                <pre className="whitespace-pre-wrap">{showCode}</pre>   
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                <Submissions submissionHistory={submissionHistory} />
                             )}
                             {activeLeftTab === 'ChatAi' && (
                                 <ChatAi className="overflow-y-scroll" problem={problem}></ChatAi>
@@ -355,7 +298,7 @@ function Problem() {
                                     height='100%'
                                     language={getLanguageForMonaco(selectedLanguage)}
                                     onChange={handleEditorChange}
-                                    value={code}
+                                    value={updatedCode[selectedLanguage]}
                                     onMount={handleEditorDidMount}
                                     theme="vs-dark"
                                     options={{
@@ -391,18 +334,18 @@ function Problem() {
                             </div>
                         </div>
                     )}
-                    {activeRightTab === 'result' &&  
-                    (Object.keys(resultHistory).length !== 0 ? 
-                        (<div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
-                            <h2>TestCase: {resultHistory?.testCasesPassed + '/' + resultHistory?.testCasesTotal}</h2>
-                            <h3>Memory: {resultHistory?.memory}</h3>
-                            <h3>Time: {resultHistory?.runtime}</h3>
-                        </div>) : (
-                            <div className="flex justify-center items-center min-h-screen font-bold text-primary">
-                                <h1>Submit problem first</h1>
-                            </div>
+                    {activeRightTab === 'result' &&
+                        (Object.keys(resultHistory).length !== 0 ?
+                            (<div className={`${resultHistory?.status === 'accepted' ? 'bg-success' : 'bg-error'}`}>
+                                <h2>TestCase: {resultHistory?.testCasesPassed + '/' + resultHistory?.testCasesTotal}</h2>
+                                <h3>Memory: {resultHistory?.memory}</h3>
+                                <h3>Time: {resultHistory?.runtime}</h3>
+                            </div>) : (
+                                <div className="flex justify-center items-center min-h-screen font-bold text-primary">
+                                    <h1>Submit problem first</h1>
+                                </div>
+                            )
                         )
-                    )
                     }
                     {activeRightTab === 'testcase' && problem &&
                         <form onSubmit={handleSubmit(onSubmit)} className="mt-4 ml-4 bg-neutral-950 p-4">

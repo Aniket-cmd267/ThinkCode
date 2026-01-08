@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FiSend } from "react-icons/fi";
-import axiosClient from '../utils/axiosClient';
+import axiosClient from '../../utils/axiosClient';
 
 function ChatAi({ problem }) {
     // console.log(problem)
