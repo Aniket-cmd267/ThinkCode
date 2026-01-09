@@ -10,12 +10,11 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import debounce from 'lodash.debounce';
-import { getCodeWrittenOnEditor, changeLoadState } from '../store/editorSlice'
+import { getCodeWrittenOnEditor, changeLoadState, getProblem } from '../store/editorSlice'
 import Description from "./editorPage/Description";
 import Editorial from "./editorPage/Editorial";
 import Solutions from "./editorPage/Solutions";
 import Submissions from "./editorPage/Submissions";
-
 
 const TestCaseSchema = z.object({
     visibleTestCases: z.array(
@@ -47,7 +46,7 @@ function Problem() {
     const [resultHistory, setResultHistory] = useState({});
     const [activeLeftTab, setActiveLeftTab] = useState('description');
     const [activeRightTab, setActiveRightTab] = useState('code');
-    const [problem, setProblem] = useState(null);
+    // const [problem, setProblem] = useState(null);
     const [loading, setLoading] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState('javascript');
     const {isAuthenticated}= useSelector(state => state.slice1)
@@ -57,7 +56,7 @@ function Problem() {
         'javascript': ''
     });
     let { problemId } = useParams();
-    const { load, updatedCode } = useSelector(state => state.slice2)
+    const { load, updatedCode , problemData} = useSelector(state => state.slice2)
     const editorRef = useRef(null);
     // console.log(problemId)
     const langMap = {
@@ -70,51 +69,64 @@ function Problem() {
             navigate('/')
         }
     },[isAuthenticated])
-    useEffect(() => {
-        const fetchProblem = async () => {
-            setLoading(true);
-            try {
-                const { data } = await axiosClient.get(`/problem/problemById/${problemId}`);
-                console.log(data)
-                const initialCode = data?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
-                setProblem(data)
-                setCode(prevState => ({
-                    ...prevState,
-                    [selectedLanguage]: initialCode
-                }))
-                setLoading(false)
-                // setTestCaseHistory(data?.visibleTestCases)
-                // console.log(data?.visibleTestCases)
-            } catch (err) {
-                console.error('Error fetching problem: ', err);
-                setLoading(false)
-            }
-        }
-        fetchProblem();
-    }, [problemId]);
-    useEffect(() => {
-        if (problem) {
-            const initialCode = problem?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
-            const codeSetInMonaco = () => {
-                setCode((prevState) => ({
-                    ...prevState,
-                    [selectedLanguage]: initialCode
-                }))
-            }
-            codeSetInMonaco()
-        }
-    }, [selectedLanguage, problemId])
-    useEffect(() => {
-        if (load) {
-            console.log(updatedCode)
-            setCode((prevState) => ({
-                ...prevState,
-                [selectedLanguage]: updatedCode
-            }))
-            // console.log(code)
-            dispatch(changeLoadState())
-        }
-    }, [load])
+    // useEffect(() => {
+    //     const fetchProblem = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const { data } = await axiosClient.get(`/problem/problemById/${problemId}`);
+    //             console.log(data)
+    //             const initialCode = data?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
+    //             setProblem(data)
+    //             setCode(prevState => ({
+    //                 ...prevState,
+    //                 [selectedLanguage]: initialCode
+    //             }))
+    //             setLoading(false)
+    //             // setTestCaseHistory(data?.visibleTestCases)
+    //             // console.log(data?.visibleTestCases)
+    //         } catch (err) {
+    //             console.error('Error fetching problem: ', err);
+    //             setLoading(false)
+    //         }
+    //     }
+    //     fetchProblem();
+    // }, [problemId]);
+    // useEffect(() => {
+    //     if (problemData) {
+    //         const initialCode = problem?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
+    //         const codeSetInMonaco = () => {
+    //             setCode((prevState) => ({
+    //                 ...prevState,
+    //                 [selectedLanguage]: initialCode
+    //             }))
+    //         }
+    //         codeSetInMonaco()
+            
+    //     }
+    // }, [selectedLanguage, problemId])
+    // useEffect(() =>{
+    //     const value= code[selectedLanguage]
+    //     console.log('Hello')
+    //     dispatch(getCodeWrittenOnEditor({selectedLanguage,value}))
+    // },[problemId])
+    // useEffect(() => {
+    //     if (load) {
+    //         console.log(updatedCode)
+    //         setCode((prevState) => ({
+    //             ...prevState,
+    //             [selectedLanguage]: updatedCode
+    //         }))
+    //         // console.log(code)
+    //         dispatch(changeLoadState())
+    //     }
+    // }, [load])
+
+    useEffect(() =>{
+        setLoading(true)
+        dispatch(getProblem(problemId))
+        console.log('Hello')
+        setLoading(false)
+    },[])
     function getLanguageForMonaco(lang) {
         switch (lang) {
             case 'javascript': return 'Javascript'
@@ -169,8 +181,8 @@ function Problem() {
     // Submission 
     async function submitCode(code, lang) {
         try {
-            const driverBefore = `${problem?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
-            const driverAfter = `${problem?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
+            const driverBefore = `${problemData?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
+            const driverAfter = `${problemData?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
             // console.log("Hello",driverBefore,"World", driverAfter)
             const fullCode = driverBefore + code + driverAfter
             console.log(fullCode)
@@ -219,7 +231,7 @@ function Problem() {
         try {
             console.log(data)
             await axiosClient.put(`/problem/update/${problemId}`, {
-                problem,
+                problemData,
                 hiddenTestCases: data
             })
             alert('Problem updated successfully')
@@ -250,22 +262,22 @@ function Problem() {
                 </div>
                 {/* COntent Section */}
                 <div className="flex-1 overflow-y-auto p-6">
-                    {problem && (
+                    {problemData && (
                         <>
                             {activeLeftTab === 'description' && (
-                                <Description problem={problem} />
+                                <Description problem={problemData} />
                             )}
                             {activeLeftTab === 'Editorial' && (
                                 <Editorial />
                             )}
                             {activeLeftTab === 'Solutions' && (
-                                <Solutions problem={problem} />
+                                <Solutions problem={problemData} />
                             )}
                             {activeLeftTab === 'Submissions' && (
                                 <Submissions submissionHistory={submissionHistory} />
                             )}
                             {activeLeftTab === 'ChatAi' && (
-                                <ChatAi className="overflow-y-scroll" problem={problem}></ChatAi>
+                                <ChatAi className="overflow-y-scroll" problem={problemData}></ChatAi>
                             )}
                         </>
                     )}
@@ -329,7 +341,7 @@ function Problem() {
                             </div>
                             <div className="p-4 border-t border-base-300 flex justify-center gap-4">
                                 <button className="btn btn-ghost" onClick={() => showTestCases()}>Console</button>
-                                <button className="btn btn-ghost" onClick={() => runCode(code, selectedLanguage, problem.driverCode)}>Run</button>
+                                <button className="btn btn-ghost" onClick={() => runCode(code, selectedLanguage, problemData?.driverCode)}>Run</button>
                                 <button className="btn btn-ghost" onClick={() => submitCode(code, selectedLanguage)}>Submit</button>
                             </div>
                         </div>
@@ -347,7 +359,7 @@ function Problem() {
                             )
                         )
                     }
-                    {activeRightTab === 'testcase' && problem &&
+                    {activeRightTab === 'testcase' && problemData &&
                         <form onSubmit={handleSubmit(onSubmit)} className="mt-4 ml-4 bg-neutral-950 p-4">
                             {visibleFields.map((field, i) => (
                                 <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
