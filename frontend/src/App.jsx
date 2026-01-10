@@ -14,6 +14,7 @@ import UpdateProblem from "./components/UpdateProblem";
 import RouteNotExist from "./pages/RouteNotExist";
 import Profile from "./components/Profile";
 import ProfileNavigation from "./components/ProfileNavigation";
+import LandingPage from "./components/LandingPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -28,6 +29,7 @@ function App() {
   }
   return (
     <Routes>
+      <Route path="/landing" element={<LandingPage/>}></Route>
       <Route path="*" element={isAuthenticated ? <Navigate to='/' /> : <RouteNotExist></RouteNotExist>}></Route>
       <Route path="/signup" element={!(isAuthenticated) ? <Signup /> : <Navigate to='/' />}></Route>
       <Route path="/login" element={!(isAuthenticated) ? <Login /> : <Navigate to='/' />}></Route>

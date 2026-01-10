@@ -6,23 +6,22 @@ import axiosClient from '../../utils/axiosClient';
 function ChatAi({ problem }) {
     // console.log(problem)
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    const [messages, setMessage] = useState([
-        { role: 'model', parts: [{ text: 'I will answer dsa related questions....' }] },
-        { role: 'user', parts: [{ text: 'okk' }] }
-    ])
+    const [messages, setMessage] = useState([])
     const messageEndRef = useRef(null);
 
     const onSubmit = async (data) => {
         console.log(data)
-        setMessage(prev => [...prev, { role: 'user', parts: [{ text: data.message }] }])
+        const newUserMessage= { role: 'user', parts: [{ text: data.message }] }
+        setMessage(prev => [...prev, newUserMessage])
         reset()
         try {
-            // console.log(messages)
+            console.log('msg: ',messages)
+            const updatedMessage= [...messages, newUserMessage]
             const response = await axiosClient.post('/ai/chat', {
-                message: messages,
+                message: updatedMessage,
                 problem: problem
             })
-            // console.log(response) 
+            console.log(response.data.message) 
 
             setMessage(prev => [...prev, {
                 role: 'model',
@@ -69,7 +68,7 @@ function ChatAi({ problem }) {
     }, [messages]);
     return (
         <div className='flex flex-col border border-base-300 h-screen max-h-[85vh] min-h-[500px] p-3 '>
-            <div>
+            <div className='flex-1 overflow-y-auto p-2'>
                 {messages.map((msg, index) => (
                     <div key={index}
                         className={`chat ${msg.role === 'user' ? 'chat-end' : 'chat-start'}`}>

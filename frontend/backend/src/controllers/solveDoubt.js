@@ -186,7 +186,7 @@ const chatbot = async (req, res) => {
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY});
         async function main() {
             const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: "gemini-2.0-flash",
                 contents: message,
                 config: {
                     systemInstruction: `
@@ -259,14 +259,18 @@ programming languages related u will reply that also.
 Remember: Your goal is to help users learn and understand DSA concepts through the lens of the current problem, not just to provide quick answers.
                 `},
             });
+            // for await(const chunk of response){
+            //     console.log(chunk.text)
+            // }
             console.log(response.text)
             res.status(201).json({
                 message: response.text
             });
         }
-        main();
+        await main();
     }
     catch (err) {
+        console.log(err)
         res.status(500).json({
             message: "Internal server error"
         });
