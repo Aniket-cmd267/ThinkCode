@@ -1,5 +1,5 @@
 import { Outlet } from "react-router"
-import { NavLink } from "react-router"
+import { NavLink, Link } from "react-router"
 import { useSelector } from "react-redux"
 import { logoutUser } from '../store/authSlice';
 import { useDispatch } from "react-redux";
@@ -17,9 +17,17 @@ export default function ProfileNavigation(){
     }   
     return (
         <>
-            <nav className="navbar bg-base-100 shadow-lg px-4">
-                <div className="flex-1">
-                    <NavLink to="/" className="btn btn-ghost text-xl">LeetCode</NavLink>
+            <nav className="navbar bg-base-100 shadow-lg px-4 flex justify-between">
+                <div className="flex">
+                    <NavLink to="/" className="btn btn-ghost text-xl">ThinkCode</NavLink>
+                </div>
+                <div className="flex gap-6">
+                    <NavLink to='/problem'>
+                        <button>Problem</button>
+                    </NavLink>
+                    <NavLink to='/contest'>
+                        <button>Contest</button>
+                    </NavLink>
                 </div>
                 <div className="flex-none gap-4">
                     <div className="dropdown dropdown-end">

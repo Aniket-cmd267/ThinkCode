@@ -6,7 +6,6 @@ const getProblem= createAsyncThunk(
     async (problemId, {rejectWithValue}) =>{
         try{
             const { data } = await axiosClient.get(`/problem/problemById/${problemId}`);
-            console.log('bollo')
             // console.log(data)
             return data
         }catch(err){

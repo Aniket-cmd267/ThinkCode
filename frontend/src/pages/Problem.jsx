@@ -124,7 +124,6 @@ function Problem() {
     useEffect(() =>{
         setLoading(true)
         dispatch(getProblem(problemId))
-        console.log('Hello')
         setLoading(false)
     },[])
     function getLanguageForMonaco(lang) {
@@ -210,7 +209,6 @@ function Problem() {
         async function submittedProblem() {
             try {
                 const { data } = await axiosClient.get(`/problem/submittedProblem/${problemId}`)
-                console.log()
                 if (typeof data === object) {
                     setSubmissionHistory(data)
                 }

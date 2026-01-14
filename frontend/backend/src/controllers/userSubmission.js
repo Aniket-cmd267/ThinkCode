@@ -130,7 +130,6 @@ const runCode = async (req, res) => {
     for(const test of testResult) {
       if(test.status.id === 6) {
         const compileError = Buffer.from(test.compile_output, 'base64').toString('utf8');
-        
         console.log(compileError);
       }
     }
