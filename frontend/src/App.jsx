@@ -14,7 +14,7 @@ import UpdateProblem from "./components/UpdateProblem";
 import RouteNotExist from "./pages/RouteNotExist";
 import Profile from "./components/Profile";
 import ProfileNavigation from "./components/ProfileNavigation";
-import LandingPage from "./components/LandingPage";
+import LandingPage from "./components/landingPage/LandingPage";
 import HeadToHead from "./pages/HeadToHead";
 
 function App() {

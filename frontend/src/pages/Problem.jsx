@@ -10,7 +10,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import debounce from 'lodash.debounce';
-import { getCodeWrittenOnEditor, changeLoadState, getProblem } from '../store/editorSlice'
+import { getCodeWrittenOnEditor, getProblem } from '../store/editorSlice'
 import Description from "./editorPage/Description";
 import Editorial from "./editorPage/Editorial";
 import Solutions from "./editorPage/Solutions";
@@ -56,7 +56,7 @@ function Problem() {
         'javascript': ''
     });
     let { problemId } = useParams();
-    const { load, updatedCode , problemData} = useSelector(state => state.slice2)
+    const { updatedCode , problemData} = useSelector(state => state.slice2)
     const editorRef = useRef(null);
     // console.log(problemId)
     const langMap = {

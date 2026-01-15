@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { useEffect, useState } from "react";
 
-export default function LandingPage() {
+export default function HeroSection() {
   const [displayedCode, setDisplayedCode] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -67,7 +67,7 @@ export default function LandingPage() {
   }, [currentIndex, codeSnippet]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#151828] via-[#191724] to-[#121420] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#1A0A0A] via-[#120505] to-[#000000] flex items-center justify-center px-4">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         
         {/* Left Side - Text Content */}
@@ -110,7 +110,7 @@ export default function LandingPage() {
 
         {/* Right Side - 3D Card with Code */}
         <CardContainer className="inter-var">
-          <CardBody className="bg-gray-950/80 backdrop-blur-xl relative group/card border-purple-500/20 w-full h-[500px] rounded-xl p-6 border shadow-2xl">
+          <CardBody className="bg-[#1E293B] backdrop-blur-xl relative group/card border-purple-500/20 w-full h-[500px] rounded-xl p-6 border shadow-2xl">
             
             {/* Card Header */}
             <CardItem

@@ -13,6 +13,30 @@ const getProblem= createAsyncThunk(
         }
     }
 )   
+// const storeChatInBackend= createAsyncThunk(
+//     'code/backend',
+//     async ({chatHistory,problemId},{rejectWithValue}) =>{
+//         try{
+//             const {data}= await axiosClient.post(`/ai/chat/${problemId}`, chatHistory)
+//             return data;
+//         }catch(err){
+//             return rejectWithValue(err.response.data);
+//         }
+//     }
+// )
+const sendChatMsg= createAsyncThunk(
+    'send/chat',
+    async ({updatedMessage, problem}, {rejectWithValue}) =>{
+        try{
+            // console.log(updatedMessage)
+            const {data}=await axiosClient.post('/ai/chat', {updatedMessage, problem})
+            // console.log(data)
+            return data;
+        }catch(err){
+            return rejectWithValue(err.response.data);
+        }
+    }
+)
 const storeCode= createSlice({
     name: 'editor',
     initialState: {
@@ -20,6 +44,7 @@ const storeCode= createSlice({
         updatedCode: {},
         // load: false,
         error: null,
+        chatHistory: []
         // problemId: 
         // loading: false
     },
@@ -30,8 +55,8 @@ const storeCode= createSlice({
             // state.load= true
             state.updatedCode[selectedLanguage]= value
         },
-        changeLoadState: (state) =>{
-            // state.load= false
+        addUserMsg: (state, action) =>{
+            state.chatHistory.push(action.payload)
         }
     },
     extraReducers: (builder) =>{
@@ -52,8 +77,19 @@ const storeCode= createSlice({
             // state.loading= false,
             state.error= action.payload?.message || "Something went wrong"
         })
+        .addCase(sendChatMsg.pending, (state) =>{
+            state.error= null;
+        })
+        .addCase(sendChatMsg.fulfilled, (state, action) =>{
+            console.log('Action: ',action.payload.message)
+            state.error= null
+            state.chatHistory.push({role: 'model', parts: [{text: action.payload.message}]})
+        })
+        .addCase(sendChatMsg.rejected, (state,action) =>{
+            state.error= !!action.payload
+        })
     }                                     
 })
 export default storeCode.reducer;
-export const {getCodeWrittenOnEditor, changeLoadState}= storeCode.actions;
-export {getProblem};
+export const {getCodeWrittenOnEditor, changeLoadState, addUserMsg}= storeCode.actions;
+export {getProblem, sendChatMsg};
