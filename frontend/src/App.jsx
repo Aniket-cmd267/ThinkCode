@@ -30,7 +30,7 @@ function App() {
   }
   return (
     <Routes>
-      <Route path="/landing" element={<LandingPage/>}></Route>
+      <Route path="/" element={ isAuthenticated ? <Navigate to='/problem' />:<LandingPage/>}></Route>
       <Route path="*" element={isAuthenticated ? <Navigate to='/problem' /> : <RouteNotExist></RouteNotExist>}></Route>
       <Route path="/signup" element={!(isAuthenticated) ? <Signup /> : <Navigate to='/problem' />}></Route>
       <Route path="/login" element={!(isAuthenticated) ? <Login /> : <Navigate to='/problem' />}></Route>

@@ -92,7 +92,7 @@ export default function FeatureGrid() {
   const smallFeatures = features.filter(f => f.size === "small");
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-[#1A0A0A] via-[#120505] to-[#000000] px-4 py-20">
+    <section className="min-h-screen bg-gradient-to-br from-[#121212] via-[#1A1A1A] to-[#0D0D0D] px-4 py-20">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}

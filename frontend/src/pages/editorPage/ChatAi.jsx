@@ -3,42 +3,26 @@ import { useForm } from 'react-hook-form';
 import { FiSend } from "react-icons/fi";
 import axiosClient from '../../utils/axiosClient';
 import { useDispatch, useSelector } from 'react-redux';
-import { sendChatMsg, addUserMsg } from '../../store/editorSlice'
+import { sendChatMsg, addUserMsg ,getChatHistoryFromDatabase} from '../../store/editorSlice'
 
-function ChatAi({ problem }) {
-    // console.log(problem)
-    // const [loading, setLoading] = useState(false)
+function ChatAi({ problem , problemId}) {
+
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    // const [messages, setMessage] = useState([])
+
     const messageEndRef = useRef(null);
     const dispatch = useDispatch();
-    const { chatHistory } = useSelector(state => state.slice2)
+    const { chatHistory} = useSelector(state => state.slice2)
     const onSubmit =  (data) => {
         console.log(data)
         const newUserMessage = { role: 'user', parts: [{ text: data.message }] }
-        // setMessage(prev => [...prev, newUserMessage])
         reset()
-        // try {
-        // console.log('msg: ', messages)
         const updatedMessage = [...chatHistory, newUserMessage]
         dispatch(addUserMsg(newUserMessage))
-        dispatch(sendChatMsg({ updatedMessage, problem }))
-        // const response = await axiosClient.post('/ai/chat', {
-        //     message: updatedMessage,
-        //     problem: problem
-        // })
-        // console.log(response.data.message) 
-        // console.log(messages)
-        // } catch (err) {
-        //     console.log('Error: ', err);
-        //     setMessage(prev => [...prev, {
-        //         role: 'model',
-        //         parts: [{ text: 'Error from AI chatbot' }]
-        //     }]);
-        // }
+        dispatch(sendChatMsg({ updatedMessage, problem, newUserMessage , problemId}))
     }
-    // console.log(chatMsg)
-
+    useEffect(() =>{
+        dispatch(getChatHistoryFromDatabase(problemId))
+    },[problemId])
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behaviour: 'smooth' })
     }, [chatHistory]);
@@ -53,7 +37,9 @@ function ChatAi({ problem }) {
                                 {msg.parts?.[0]?.text}
                             </div>
                         </div>
-                    )): (<></>)
+                    )): (<div className='flex justify-center items-center h-full'>
+                        <h3 className='text-bold text-4xl text-gray-600 shadow shadow-amber-100'>Where u are struggling !!</h3>
+                    </div>)
                 }
                 <div ref={messageEndRef} />
             </div>

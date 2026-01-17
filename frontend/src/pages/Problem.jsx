@@ -275,7 +275,7 @@ function Problem() {
                                 <Submissions submissionHistory={submissionHistory} />
                             )}
                             {activeLeftTab === 'ChatAi' && (
-                                <ChatAi className="overflow-y-scroll" problem={problemData}></ChatAi>
+                                <ChatAi className="overflow-y-scroll" problem={problemData} problemId= {problemId}></ChatAi>
                             )}
                         </>
                     )}

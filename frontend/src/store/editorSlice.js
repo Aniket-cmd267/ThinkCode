@@ -13,24 +13,26 @@ const getProblem= createAsyncThunk(
         }
     }
 )   
-// const storeChatInBackend= createAsyncThunk(
-//     'code/backend',
-//     async ({chatHistory,problemId},{rejectWithValue}) =>{
-//         try{
-//             const {data}= await axiosClient.post(`/ai/chat/${problemId}`, chatHistory)
-//             return data;
-//         }catch(err){
-//             return rejectWithValue(err.response.data);
-//         }
-//     }
-// )
+const getChatHistoryFromDatabase= createAsyncThunk(
+    'chat/backend',
+    async (problemId,{rejectWithValue}) =>{
+        try{
+            console.log(problemId)
+            const {data}= await axiosClient.post(`/ai/get/chat/${problemId}`)
+            console.log('Okay', data)
+            return data;
+        }catch(err){
+            return rejectWithValue(err.response.data);
+        }
+    }
+)
 const sendChatMsg= createAsyncThunk(
     'send/chat',
-    async ({updatedMessage, problem}, {rejectWithValue}) =>{
+    async ({updatedMessage, problem, newUserMessage, problemId}, {rejectWithValue}) =>{
         try{
             // console.log(updatedMessage)
-            const {data}=await axiosClient.post('/ai/chat', {updatedMessage, problem})
-            // console.log(data)
+            const {data}=await axiosClient.post('/ai/chat', {updatedMessage, problem, newUserMessage, problemId})
+            console.log(data)
             return data;
         }catch(err){
             return rejectWithValue(err.response.data);
@@ -42,17 +44,12 @@ const storeCode= createSlice({
     initialState: {
         problemData: null,
         updatedCode: {},
-        // load: false,
         error: null,
         chatHistory: []
-        // problemId: 
-        // loading: false
     },
     reducers: {
         getCodeWrittenOnEditor: (state,action) =>{
             const {selectedLanguage, value}= action.payload
-            // console.log('Redux',action.payload)
-            // state.load= true
             state.updatedCode[selectedLanguage]= value
         },
         addUserMsg: (state, action) =>{
@@ -74,22 +71,28 @@ const storeCode= createSlice({
             state.error= null
         })
         .addCase(getProblem.rejected, (state,action) =>{
-            // state.loading= false,
             state.error= action.payload?.message || "Something went wrong"
         })
         .addCase(sendChatMsg.pending, (state) =>{
             state.error= null;
         })
         .addCase(sendChatMsg.fulfilled, (state, action) =>{
-            console.log('Action: ',action.payload.message)
+            // console.log('Action: ',action.payload.message)
             state.error= null
             state.chatHistory.push({role: 'model', parts: [{text: action.payload.message}]})
         })
         .addCase(sendChatMsg.rejected, (state,action) =>{
             state.error= !!action.payload
         })
+        .addCase(getChatHistoryFromDatabase.fulfilled, (state, action) =>{
+            
+            if(action.payload!=='chatHistory not exist'){
+                state.chatHistory= action.payload.message
+            }
+            state.error= null
+        })
     }                                     
 })
 export default storeCode.reducer;
 export const {getCodeWrittenOnEditor, changeLoadState, addUserMsg}= storeCode.actions;
-export {getProblem, sendChatMsg};
+export {getProblem, sendChatMsg, getChatHistoryFromDatabase};

@@ -1,8 +1,15 @@
-const { GoogleGenAI } = require("@google/genai")
+const { GoogleGenAI } = require("@google/genai");
+const Chat = require("../models/chat");
+
 const chatbot = async (req, res) => {
     try {
-        const { updatedMessage, problem } = req.body;
+        const { updatedMessage, problem, newUserMessage, problemId} = req.body;
+        const userId= req.result._id
+        if(!userId){
+            return res.status(401).send('UserId is not present')
+        }
         console.log(updatedMessage)
+        
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY});
         async function main() {
             const response = await ai.models.generateContent({
@@ -78,10 +85,22 @@ programming languages related u will reply that also.
 Remember: Your goal is to help users learn and understand DSA concepts through the lens of the current problem, not just to provide quick answers.
                 `},
             });
-            // for await(const chunk of response){
-            //     console.log(chunk.text)
-            // }
             console.log(response.text)
+            await Chat.findOneAndUpdate(
+                {userId, problemId},
+                {
+                    $push: {
+                        chatHistory: {
+                            $each: [
+                                // {role: 'user', parts: [{text: userMsg.message}]},
+                                newUserMessage,
+                                { role: 'model', parts: [{text: response.text}]}
+                            ]
+                        }
+                    }
+                },
+                { upsert: true, new: true }
+            )
             res.status(201).json({
                 message: response.text
             });
@@ -95,4 +114,27 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
         });
     }
 }
-module.exports = chatbot;
+
+const getChatHistory= async(req,res) =>{
+    try{
+        const userId= req.result._id;
+        const problemId= req.params.id;
+        console.log(problemId)
+        if(!userId || !problemId){
+            return res.status(404).send('Credentials invalid')
+        }
+        const history=await Chat.findOne({userId, problemId});
+        console.log('chat history exists')
+        if(!history){
+            return res.status(200).send('chatHistory not exist')
+        }
+        console.log(history)
+        console.log('Hello')
+        return res.status(200).json({
+            message: history.chatHistory
+        })
+    }catch(err){
+        res.status(500).send('Internal server error');
+    }
+}
+module.exports = {chatbot, getChatHistory};
