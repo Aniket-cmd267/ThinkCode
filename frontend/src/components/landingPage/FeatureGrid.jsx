@@ -10,18 +10,18 @@ export default function FeatureGrid() {
       title: "AI Debugger",
       description: "Intelligent debugging that understands your code context and suggests fixes before you even ask.",
       icon: Brain,
-      size: "large",
+      size: "medium",
       stats: "99.2% accuracy",
       gradient: "from-[#EF4444]/20 to-[#DC2626]/10"
     },
-    {
-      title: "1v1 Battle Arena",
-      description: "Compete head-to-head with developers worldwide. Real-time coding battles with live leaderboards.",
-      icon: Sword,
-      size: "large",
-      stats: "10K+ daily battles",
-      gradient: "from-[#F87171]/20 to-[#EF4444]/10"
-    },
+    // {
+    //   title: "1v1 Battle Arena",
+    //   description: "Compete head-to-head with developers worldwide. Real-time coding battles with live leaderboards.",
+    //   icon: Sword,
+    //   size: "large",
+    //   stats: "10K+ daily battles",
+    //   gradient: "from-[#F87171]/20 to-[#EF4444]/10"
+    // },
     {
       title: "AI Code Review",
       description: "Get instant feedback on code quality, performance, and best practices.",
@@ -29,25 +29,25 @@ export default function FeatureGrid() {
       size: "medium",
       gradient: "from-[#EF4444]/10 to-transparent"
     },
+    // {
+    //   title: "Global Leaderboard",
+    //   description: "Track your ranking against millions of developers.",
+    //   icon: Trophy,
+    //   size: "medium",
+    //   gradient: "from-[#DC2626]/10 to-transparent"
+    // },
+    // {
+    //   title: "Team Collaboration",
+    //   description: "Code together in real-time with your team or study group.",
+    //   icon: Users,
+    //   size: "medium",
+    //   gradient: "from-[#F87171]/10 to-transparent"
+    // },
     {
-      title: "Global Leaderboard",
-      description: "Track your ranking against millions of developers.",
-      icon: Trophy,
-      size: "medium",
-      gradient: "from-[#DC2626]/10 to-transparent"
-    },
-    {
-      title: "Team Collaboration",
-      description: "Code together in real-time with your team or study group.",
-      icon: Users,
-      size: "medium",
-      gradient: "from-[#F87171]/10 to-transparent"
-    },
-    {
-      title: "7+ Languages",
-      description: "JavaScript, Python, C++, Java, Go, Rust & more.",
+      title: "3+ Languages",
+      description: "JavaScript, C++, Java ",
       icon: Code2,
-      size: "small"
+      size: "medium"
     },
     // {
     //   title: "Live Sessions",
@@ -65,13 +65,13 @@ export default function FeatureGrid() {
       title: "Interview Prep",
       description: "Company-specific question sets from FAANG+.",
       icon: Target,
-      size: "small"
+      size: "medium"
     },
     {
       title: "Smart Hints",
       description: "Progressive hints that don't spoil the solution.",
       icon: Zap,
-      size: "small"
+      size: "medium"
     },
     // {
     //   title: "Secure IDE",
@@ -83,7 +83,7 @@ export default function FeatureGrid() {
       title: "Custom Tracks",
       description: "Personalized learning paths based on your goals.",
       icon: Layers,
-      size: "small"
+      size: "medium"
     }
   ];
 
@@ -92,9 +92,8 @@ export default function FeatureGrid() {
   const smallFeatures = features.filter(f => f.size === "small");
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-[#121212] via-[#1A1A1A] to-[#0D0D0D] px-4 py-20">
+    <section className="min-h-screen bg-linear-to-br from-[#1A0A0A] via-[#120505] to-[#000000] px-4 py-20">
       <div className="max-w-7xl mx-auto">
-        
         {/* Section Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-[#261212] border border-[#EF4444]/20 px-4 py-2 rounded-full mb-6">
@@ -119,7 +118,7 @@ export default function FeatureGrid() {
           {/* Large Feature 1 */}
           {largeFeatures[0] && (
             <div className="col-span-12 md:col-span-6 md:row-span-2 bg-[#261212] border border-[#EF4444]/20 rounded-2xl p-8 hover:border-[#EF4444]/40 transition-all duration-300 group relative overflow-hidden">
-              <div className={`absolute inset-0 bg-gradient-to-br ${largeFeatures[0].gradient} opacity-50 group-hover:opacity-70 transition-opacity`}></div>
+              <div className={`absolute inset-0 bg-linear-to-br ${largeFeatures[0].gradient} opacity-50 group-hover:opacity-70 transition-opacity`}></div>
               
               <div className="relative z-10">
                 <div className="bg-[#EF4444]/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">

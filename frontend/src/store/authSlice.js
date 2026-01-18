@@ -8,9 +8,7 @@ const registerUser= createAsyncThunk(
         // userData is coming when dispatch triggers the createasyncthunk conatining the data when user click on login
         try{
             console.log(userData);
-            console.log('Thunk running')
             const response= await axiosClient.post('/user/register', userData); // creating and sending the data
-            console.log('Thunk passed') 
             return response.data.user; // data is a object contain (user, message) as keys
         }catch(error){
             return rejectWithValue(error.response.data);

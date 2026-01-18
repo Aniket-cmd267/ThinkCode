@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { FiEye, FiEyeOff, FiLock, FiMail, FiShield } from 'react-icons/fi';
 
 const loginSchema = z.object({
-    emailId: z.string().email("Invalid email address"),
+    emailId: z.email("Invalid email address"),
     password: z.string().min(3, "Password must be at least 3 characters")
 });
 
@@ -65,6 +65,7 @@ function Login() {
                             <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#EF4444] transition-colors" />
                             <input 
                                 type='email' 
+                                autoComplete="username"
                                 placeholder='developer@thinkcode.io' 
                                 {...register('emailId')} 
                                 className={`w-full bg-[#1A0A0A]/60 border ${errors.emailId ? 'border-error' : 'border-white/10'} rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-[#EF4444]/50 transition-all`}

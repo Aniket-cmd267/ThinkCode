@@ -68,7 +68,7 @@ export default function InteractivePreview() {
   }, [currentIndex, showHint, codeSnippet]);
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-[#000000] via-[#120505] to-[#000000] flex items-center justify-center px-4 py-20">
+    <section className="min-h-screen bg-linear-to-br from-[#000000] via-[#120505] to-[#000000] flex items-center justify-center px-4 py-20">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
@@ -92,7 +92,7 @@ export default function InteractivePreview() {
           
           {/* Left: Code Editor Card */}
           <CardContainer className="w-full">
-            <CardBody className="bg-[#261212]/80 backdrop-blur-xl relative border-[#EF4444]/20 w-full h-[500px] rounded-xl p-6 border shadow-2xl">
+            <CardBody className="bg-[#261212]/80 backdrop-blur-xl relative border-[#EF4444]/20 w-full h-125 rounded-xl p-6 border shadow-2xl">
               
               {/* Editor Header */}
               <CardItem translateZ="10" className="flex items-center justify-between mb-4">

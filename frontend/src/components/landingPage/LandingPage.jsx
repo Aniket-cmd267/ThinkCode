@@ -13,8 +13,8 @@ export default function LandingPage(){
       <HeroSection></HeroSection>
       <InteractivePreview></InteractivePreview>
       <FeatureGrid></FeatureGrid>
-      <CompetitionArena></CompetitionArena>
-      <AIMentorship></AIMentorship>
+      {/* <CompetitionArena></CompetitionArena> */}
+      {/* <AIMentorship></AIMentorship> */}
       <PathToMastery></PathToMastery>
       <SocialProof></SocialProof>
       <Footer></Footer>
