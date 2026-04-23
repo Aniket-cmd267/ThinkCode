@@ -225,7 +225,7 @@ const submittedProblem = async (req, res) => {
     const userId = req.result._id;
     const problemId = req.params.pid;
 
-    const ans = await Submission.find({ userId, problemId });
+    const ans = await Submission.find({ userId, problemId }).sort({ createdAt: -1 });
 
     // #region agent log
     fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
@@ -284,5 +284,4 @@ const submittedProblem = async (req, res) => {
 }
 
 module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblem, solvedAllProblembyUser, submittedProblem };
-
 

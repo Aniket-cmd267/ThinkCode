@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axiosClient from "../utils/axiosClient";
 import { useNavigate, useParams } from "react-router";
 import Editor from '@monaco-editor/react';
-import { useRef } from "react";
 import ChatAi from "./editorPage/ChatAi";
 import { useDispatch, useSelector } from "react-redux"
 import { IoIosAddCircle } from "react-icons/io";
@@ -32,12 +31,12 @@ const TestCaseSchema = z.object({
 })
 function Problem() {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const debouncedSave = useRef(
     debounce(({ selectedLanguage, value }) => {
       dispatch(getCodeWrittenOnEditor({ selectedLanguage, value }));
     }, 1000)
   ).current;
-  const dispatch = useDispatch()
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(TestCaseSchema),
     defaultValue: {
@@ -53,7 +52,7 @@ function Problem() {
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [activeRightTab, setActiveRightTab] = useState('code');
   // const [problem, setProblem] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const { isAuthenticated } = useSelector(state => state.slice1)
   const [code, setCode] = useState({
@@ -124,10 +123,48 @@ function Problem() {
   // }, [load])
 
   useEffect(() => {
-    setLoading(true)
-    dispatch(getProblem(problemId))
-    setLoading(false)
-  }, [])
+    async function loadProblem() {
+      setLoading(true);
+      try {
+        await dispatch(getProblem(problemId)).unwrap();
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProblem();
+  }, [dispatch, problemId])
+
+  async function fetchSubmissionHistory() {
+    try {
+      const { data } = await axiosClient.get(`/problem/submittedProblem/${problemId}`)
+      if (Array.isArray(data)) {
+        setSubmissionHistory(data)
+      } else {
+        setSubmissionHistory([])
+      }
+    } catch (err) {
+      console.log(err.message)
+      setSubmissionHistory([])
+    }
+  }
+  function formatRuntime(runtime) {
+    const value = Number(runtime)
+    if (!Number.isFinite(value) || value < 0) return '--'
+    if (value === 0) return '0 ms'
+
+    const milliseconds = value < 10 ? value * 1000 : value
+    if (milliseconds < 1000) return `${milliseconds.toFixed(0)} ms`
+    return `${(milliseconds / 1000).toFixed(2)} s`
+  }
+  function formatMemory(memory) {
+    const value = Number(memory)
+    if (!Number.isFinite(value) || value < 0) return '--'
+    if (value >= 1024) return `${(value / 1024).toFixed(2)} MB`
+    return `${value.toFixed(0)} KB`
+  }
   function getLanguageForMonaco(lang) {
     switch (lang) {
       case 'javascript': return 'Javascript'
@@ -221,28 +258,18 @@ function Problem() {
       if (response?.data?.status === 'accepted') {
         alert('Problem solved successfully')
       }
-      setSubmissionHistory([...submissionHistory, response?.data])
+      setSubmissionHistory((prev) => [response?.data, ...prev])
       setResultHistory(response?.data)
       setActiveRightTab('result')
       setActiveLeftTab('Submissions')
+      await fetchSubmissionHistory()
       // alert('Problem Submitted successfully')
     } catch (err) {
       console.log(err.message)
     }
   }
   useEffect(() => {  // All submissions made till now by same user for same problem fetch all 
-    async function submittedProblem() {
-      try {
-        const { data } = await axiosClient.get(`/problem/submittedProblem/${problemId}`)
-        if (typeof data === object) {
-          setSubmissionHistory(data)
-        }
-        console.log(submissionHistory)
-      } catch (err) {
-        return err.message
-      }
-    }
-    submittedProblem()
+    fetchSubmissionHistory()
   }, [problemId])
 
   if (loading) {
@@ -430,8 +457,8 @@ function Problem() {
                   TestCase: {resultHistory?.testCasesPassed}/
                   {resultHistory?.testCasesTotal}
                 </h2>
-                <h3>Memory: {resultHistory?.memory}</h3>
-                <h3>Time: {resultHistory?.runtime}</h3>
+                <h3>Memory: {formatMemory(resultHistory?.memory)}</h3>
+                <h3>Time: {formatRuntime(resultHistory?.runtime)}</h3>
               </div>
             ) : (
               <div className="flex justify-center items-center flex-1 font-bold text-[#EF4444]">

@@ -15,6 +15,8 @@ import RouteNotExist from "./pages/RouteNotExist";
 import Profile from "./components/Profile";
 import ProfileNavigation from "./components/ProfileNavigation";
 import LandingPage from "./components/landingPage/LandingPage";
+import Contest from "./pages/Contest";
+import ContestRoom from "./pages/ContestRoom";
 
 function App() {
   const dispatch = useDispatch();
@@ -48,6 +50,8 @@ function App() {
         <Route path="/admin/delete"
           element={(isAuthenticated && user?.role === 'admin') ? <AdminDelete /> : <Navigate to='/problem' />}></Route>
 
+        <Route path="/contest" element={isAuthenticated ? <Contest /> : <Navigate to='/login' />}></Route>
+        <Route path="/contest/:roomId" element={isAuthenticated ? <ContestRoom /> : <Navigate to='/login' />}></Route>
         <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
       </Route>
 

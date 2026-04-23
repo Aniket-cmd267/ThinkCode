@@ -142,10 +142,6 @@ const submitCode = async (req, res) => {
       throw new Error('Problem in the testcases');
     }
 
-    if (count === testCasesPassed) {
-      submittedResult.status = 'accepted';
-    }
-
     submittedResult.status = status;
     submittedResult.testCasesPassed = testCasesPassed;
     submittedResult.errorMessage = errorMessage;
@@ -153,15 +149,17 @@ const submitCode = async (req, res) => {
     submittedResult.memory = memory;
     await submittedResult.save();
 
-    const alreadySolved = Array.isArray(req.result.problemSolved)
-      ? req.result.problemSolved.some(
-          (pid) => String(pid) === String(problemId)
-        )
-      : false;
+    if (submittedResult.status === 'accepted') {
+      const alreadySolved = Array.isArray(req.result.problemSolved)
+        ? req.result.problemSolved.some(
+            (pid) => String(pid) === String(problemId)
+          )
+        : false;
 
-    if (!alreadySolved) {
-      req.result.problemSolved.push(problemId);
-      await req.result.save();
+      if (!alreadySolved) {
+        req.result.problemSolved.push(problemId);
+        await req.result.save();
+      }
     }
     return res.status(201).send(submittedResult);
   }
