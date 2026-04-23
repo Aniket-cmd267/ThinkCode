@@ -85,7 +85,7 @@ programming languages related u will reply that also.
 Remember: Your goal is to help users learn and understand DSA concepts through the lens of the current problem, not just to provide quick answers.
                 `},
             });
-            console.log(response.text)
+            // console.log(response.text)
             await Chat.findOneAndUpdate(
                 {userId, problemId},
                 {

@@ -15,7 +15,6 @@ import RouteNotExist from "./pages/RouteNotExist";
 import Profile from "./components/Profile";
 import ProfileNavigation from "./components/ProfileNavigation";
 import LandingPage from "./components/landingPage/LandingPage";
-import HeadToHead from "./pages/HeadToHead";
 
 function App() {
   const dispatch = useDispatch();
@@ -37,7 +36,6 @@ function App() {
       <Route path="/profile" element={!isAuthenticated ? <Navigate to='/login'/> : <Profile></Profile>}></Route>
       <Route path="/" element={<ProfileNavigation></ProfileNavigation>}>
         <Route path="/problem" element={(isAuthenticated) ? <Homepage /> : <Navigate to='/signup'></Navigate>}></Route>
-        <Route path="/contest" element={(isAuthenticated) ? <HeadToHead/> : <Navigate to='/signup'></Navigate>}></Route>
         <Route path="/admin"
           element={(isAuthenticated) && user?.role === 'admin' ? <AdminPanel /> : <Navigate to='/problem' />}
         ></Route>

@@ -227,13 +227,58 @@ const submittedProblem = async (req, res) => {
 
     const ans = await Submission.find({ userId, problemId });
 
-    if (ans.length == 0)
-      res.status(200).send("No Submission is persent");
+    // #region agent log
+    fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '96279e'
+      },
+      body: JSON.stringify({
+        sessionId: '96279e',
+        runId: 'baseline',
+        hypothesisId: 'H8',
+        location: 'userProblem.js:submittedProblem',
+        message: 'submittedProblem query result',
+        data: {
+          userId: String(userId),
+          problemId: String(problemId),
+          count: ans.length,
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
 
-    res.status(200).send(ans);
+    if (ans.length == 0) {
+      return res.status(200).send("No Submission is persent");
+    }
+
+    return res.status(200).send(ans);
 
   }
   catch (err) {
+    // #region agent log
+    fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '96279e'
+      },
+      body: JSON.stringify({
+        sessionId: '96279e',
+        runId: 'baseline',
+        hypothesisId: 'H9',
+        location: 'userProblem.js:submittedProblem:catch',
+        message: 'submittedProblem error',
+        data: {
+          errorMessage: String(err && err.message)
+        },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+    // #endregion
+
     res.status(500).send("Internal Server Error");
   }
 }
