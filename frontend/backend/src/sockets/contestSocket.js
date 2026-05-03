@@ -11,7 +11,7 @@ function parseCookies(cookieHeader = "") {
   return cookieHeader
     .split(";")
     .map((item) => item.trim())
-    .filter(Boolean)
+    .filter(Boolean)  
     .reduce((acc, item) => {
       const [key, ...rest] = item.split("=");
       acc[key] = decodeURIComponent(rest.join("="));

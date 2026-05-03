@@ -17,6 +17,7 @@ import ProfileNavigation from "./components/ProfileNavigation";
 import LandingPage from "./components/landingPage/LandingPage";
 import Contest from "./pages/Contest";
 import ContestRoom from "./pages/ContestRoom";
+import ResumeUpload from './components/Interview/Interview' 
 
 function App() {
   const dispatch = useDispatch();
@@ -53,6 +54,9 @@ function App() {
         <Route path="/contest" element={isAuthenticated ? <Contest /> : <Navigate to='/login' />}></Route>
         <Route path="/contest/:roomId" element={isAuthenticated ? <ContestRoom /> : <Navigate to='/login' />}></Route>
         <Route path="/problem/:problemId" element={<Problem></Problem>}></Route>
+
+
+        <Route path="/interview" element={isAuthenticated ? <ResumeUpload/> : <Navigate to='/login'/>}></Route>
       </Route>
 
     </Routes>

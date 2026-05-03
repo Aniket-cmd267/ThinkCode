@@ -13,6 +13,7 @@ const chatAiRouter= require('./routes/ChatAi')
 const contestRouter = require("./routes/contest");
 const { Server } = require("socket.io");
 const { registerContestSocket } = require("./sockets/contestSocket");
+const interviewRoutes= require('./routes/interviewRoutes')
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -34,6 +35,7 @@ app.use('/problem',problemRouter);
 app.use('/submission',submitRouter);
 app.use('/ai',chatAiRouter)
 app.use('/contest',contestRouter)
+app.use('/interview',interviewRoutes)
 
 registerContestSocket(io);
 const InitalizeConnection = async ()=>{
