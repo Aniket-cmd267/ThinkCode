@@ -3,101 +3,112 @@ const Problem = require("../models/problem");
 const User = require("../models/user");
 const Submission = require("../models/submission");
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const createProblem = async (req, res) => {
-  const { title, description, difficulty, tags,
+  const { 
+    title, description, difficulty, tags,
     visibleTestCases, hiddenTestCases, startCode, driverCode,
     referenceSolution
   } = req.body;
-  // console.log(problemCreator)
-  // console.log(driverCode)
-  // console.log(referenceSolution)
+
   try {
-    let count=0;
+    let totalSuccessfulMatches = 0;
+    let expectedTotalMatches = 0;
+
     for (const { lang, before, after } of driverCode) {
       for (const { language, completeCode } of referenceSolution) {
         if (lang.toLowerCase() !== language.toLowerCase()) {
           continue;
         }
+
+        // Increment expected match count for each language runtime matched
+        expectedTotalMatches += visibleTestCases.length;
+
         const solution = before + completeCode + after;
-        // console.log(solution)
         const languageId = getLanguageById(language);
-        // console.log(languageId)
-        // I am creating Batch submission
+
+        // Create Batch submission with Base64 encoding
         const submissions = visibleTestCases.map((testcase) => ({
           source_code: Buffer.from(solution).toString('base64'),
           language_id: languageId,
           stdin: Buffer.from(testcase.input).toString('base64')
         }));
-        // console.log(submissions)
+
         const submitResult = await submitBatch(submissions);
-        // console.log(submitResult);
-        const resultToken = submitResult.map((value) => value.token);
-        // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
-        // console.log(resultToken)
-        const testResult = await submitToken(resultToken);
-        // console.log(testResult);
+        const resultTokens = submitResult.map((value) => value.token);
 
-        for (const test of testResult) {
-          if (test.status.id <= 2) {
-            console.log(`Token ${test.token} is still processing...`);
-            continue;
-          }
-          if (test.status.id === 6) { // Status 6 is Compilation Error
-            const errorMessage = test.compile_output || ''
-            console.log("--- COMPILER ERROR ---");
-            console.log(Buffer.from(errorMessage, 'base64').toString('utf8'))
+        // --- FIXED: ASYNCHRONOUS POLLING ENGINE FOR JUDGE0 ---
+        let testResult = [];
+        let maxRetries = 10;
+        let isProcessing = true;
 
-            // Also decode the source code Judge0 thinks it received
-            const receivedCode = test.source_code || ''
-            console.log("--- CODE RECEIVED BY JUDGE ---");
-            console.log(Buffer.from(receivedCode, 'base64').toString('utf8'));
-          }
-          else if (test.status.id === 3) {
-            console.log("--- SUCCESS ---");
-            console.log(test)
+        while (maxRetries > 0 && isProcessing) {
+          testResult = await submitToken(resultTokens);
+          
+          // Check if any submission in the batch is still in Queue (1) or Processing (2)
+          const stillProcessing = testResult.some(test => test.status && test.status.id <= 2);
+          
+          if (!stillProcessing) {
+            isProcessing = false;
+          } else {
+            await delay(1500); // Wait 1.5 seconds before polling Judge0 again
+            maxRetries--;
           }
         }
-        
-        // for(let testCase of visibleTestCases){
-        //   for(let test of testResult){
-        //     const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output";
-        //     const input= test.stdin ? Buffer.from(test.stdin, 'base64').toString('utf8').trim() : 'No Input'
-        //     console.log(input.toLowerCase())
-        //     console.log(output.toLowerCase());
-        //     console.log(language)
-        //     console.log(testCase.output.toLowerCase())
-        //     console.log(testCase.input.toLowerCase())
-        //     if(testCase.output.toLowerCase().trim()=== output.toLowerCase() && testCase.input.toLowerCase().trim()=== input.toLowerCase()){
-        //       console.log(language)
-        //       count++;
-        //       break;
-        //     }
-        //   }
-        // }
-        visibleTestCases.forEach((testcase, index) =>{
-          const test= testResult[index]
-          const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output"
-          if(testcase.output.trim()=== output){
-            count++;
+
+        if (isProcessing) {
+          throw new Error(`Judge0 processing timed out for language runtime: ${language}`);
+        }
+        // ----------------------------------------------------
+
+        // Validate assertions against reassembled response outputs
+        visibleTestCases.forEach((testcase, index) => {
+          const test = testResult[index];
+          if (!test) return;
+
+          if (test.status.id === 6) { // Compilation Error Handlers
+            const errorMessage = test.compile_output || '';
+            console.error(`--- COMPILER ERROR ON DEPLOYMENT [${language}] ---`);
+            console.error(Buffer.from(errorMessage, 'base64').toString('utf8'));
+            throw new Error(`Compilation error detected in reference solution for ${language}`);
           }
-        })
+
+          const output = test.stdout 
+            ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() 
+            : "No Output";
+
+          // Match clean trimmed strings ignoring tailing whitespaces/newlines
+          if (testcase.output.trim() === output) {
+            totalSuccessfulMatches++;
+          } else {
+            console.warn(`--- MISMATCH DETECTED ---`);
+            console.warn(`Input: ${testcase.input}`);
+            console.warn(`Expected: ${testcase.output.trim()}`);
+            console.warn(`Received: ${output}`);
+          }
+        });
       }
     }
-    console.log(count)
-    if(count != 3*(visibleTestCases.length)){
-      throw new Error('Problem in the testcases')
+
+    // --- FIXED: DYNAMIC LANGUAGE ASSIGNMENT VALIDATION RULE ---
+    if (totalSuccessfulMatches !== expectedTotalMatches) {
+      throw new Error(`Test case validation mismatch. Passed ${totalSuccessfulMatches} out of ${expectedTotalMatches} required assertions.`);
     }
+
+    // Deploys clean problem payload referencing current authentication session
     const userProblem = await Problem.create({
       ...req.body,
-      problemCreator: req.result._id
+      problemCreator: req.result._id // Derived securely via middleware session decoding
     });
+
     res.status(201).send("Problem Saved Successfully");
   }
   catch (err) {
-    console.log(err)
-    res.status(400).send("Error: " + err);
+    console.error("Create Problem System Error: ", err);
+    res.status(400).send("Error: " + (err.message || err));
   }
-}
+};
 
 const updateProblem = async (req, res) => {
 
