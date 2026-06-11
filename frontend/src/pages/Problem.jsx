@@ -14,6 +14,7 @@ import Description from "./editorPage/Description";
 import Editorial from "./editorPage/Editorial";
 import Solutions from "./editorPage/Solutions";
 import Submissions from "./editorPage/Submissions";
+import TestCaseResults from "./editorPage/TestCaseResults";
 import {
   Info,
   BookOpen,
@@ -49,6 +50,7 @@ function Problem() {
   });
   const [submissionHistory, setSubmissionHistory] = useState([]);
   const [resultHistory, setResultHistory] = useState({});
+  const [testCaseResults, setTestCaseResults] = useState(null);
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [activeRightTab, setActiveRightTab] = useState('code');
   // const [problem, setProblem] = useState(null);
@@ -218,7 +220,6 @@ function Problem() {
     try {
       const driverBefore = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
       const driverAfter = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
-      // console.log("Hello",driverBefore,"World", driverAfter)
       const fullCode = driverBefore + code + driverAfter
       console.log(fullCode)
       const data = {
@@ -226,17 +227,24 @@ function Problem() {
         lang
       }
       const response = await axiosClient.post(`/submission/run/${problemId}`, data)
-      console.log(response?.data)
-      if (response?.data[0].status.id === 3) {
-        alert('Code Run successfully')
-      }
-      else {
-        alert(`${response?.data[0]?.status.description}`)
-      }
-      // setTestCaseHistory(response?.data)
-      // setActiveRightTab('testcase')
+      console.log("Run Code Response:", response?.data)
+      
+      // Store the detailed test case results
+      setTestCaseResults(response?.data)
+      
+      // Switch to result tab
+      setActiveRightTab('testrun')
     } catch (err) {
-      return err.message;
+      console.log(err.message)
+      // Show error in testrun tab
+      setTestCaseResults({
+        status: 'error',
+        errorMessage: err.message || 'Failed to run code',
+        totalPassed: 0,
+        totalTestCases: 0,
+        results: []
+      })
+      setActiveRightTab('testrun')
     }
   }
   // Submission 
@@ -377,10 +385,32 @@ function Problem() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={()=>showTestCases(activeRightTab)} 
-              className="hidden sm:inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 bg-transparent hover:bg-white/5 hover:text-white transition-all"
+              onClick={() => setActiveRightTab('code')}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                activeRightTab === 'code'
+                  ? 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
+                  : 'border-white/10 text-slate-300 hover:bg-white/5'
+              }`}
             >
-              Console
+              Code
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveRightTab('testrun')}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                activeRightTab === 'testrun'
+                  ? 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
+                  : 'border-white/10 text-slate-300 hover:bg-white/5'
+              }`}
+            >
+              Test Results
+            </button>
+            <button
+              type="button"
+              onClick={()=>showTestCases(activeRightTab)} 
+              className="hidden sm:inline-flex text-xs px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 bg-transparent hover:bg-white/5 hover:text-white transition-all"
+            >
+              Testcase Input
             </button>
             <button
               type="button"
@@ -465,6 +495,17 @@ function Problem() {
                 <h1>Submit problem first</h1>
               </div>
             ))}
+
+          {activeRightTab === "testrun" && testCaseResults && (
+            <TestCaseResults
+              results={testCaseResults.results}
+              totalTestCases={testCaseResults.totalTestCases}
+              status={testCaseResults.status}
+              errorMessage={testCaseResults.errorMessage}
+              runtime={testCaseResults.runtime}
+              memory={testCaseResults.memory}
+            />
+          )}
 
           {activeRightTab === "testcase" && problemData && (
             <form

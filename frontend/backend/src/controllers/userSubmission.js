@@ -239,20 +239,56 @@ const runCode = async (req, res) => {
     const resultToken = submitResult.map((value) => value.token);
     const testResult = await submitToken(resultToken);
 
+    // Check for compilation errors
+    let compilationError = null;
     for (const test of testResult) {
       if (test.status.id === 6) {
-        const compileError = Buffer.from(test.compile_output, 'base64').toString('utf8');
-        console.log(compileError);
+        compilationError = test.compile_output ? Buffer.from(test.compile_output, 'base64').toString('utf8') : 'Compilation error';
+        console.log(compilationError);
+        break;
       }
     }
 
+    // Build detailed test case results
+    const detailedResults = [];
+    let totalPassed = 0;
+    let runtime = 0;
+    let memory = 0;
+
     problem.visibleTestCases.forEach((testcase, index) => {
       const test = testResult[index];
-      const output = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output";
-      if (testcase.output.trim() === output) {
-        count++;
+      const actualOutput = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "No Output";
+      const expectedOutput = testcase.output.trim();
+      const passed = expectedOutput === actualOutput;
+
+      if (passed) {
+        totalPassed++;
+        runtime += parseFloat(test.time || 0);
+        memory = Math.max(memory, test.memory || 0);
       }
+
+      detailedResults.push({
+        input: testcase.input,
+        expectedOutput: expectedOutput,
+        actualOutput: actualOutput,
+        passed: passed,
+        statusId: test.status.id,
+        statusDescription: test.status.description,
+        runtime: test.time ? `${(parseFloat(test.time) * 1000).toFixed(0)} ms` : 'N/A',
+        memory: test.memory ? `${(test.memory / 1024).toFixed(2)} MB` : 'N/A'
+      });
     });
+
+    // Determine overall status
+    let status = 'accepted';
+    let errorMessage = null;
+
+    if (compilationError) {
+      status = 'error';
+      errorMessage = compilationError;
+    } else if (totalPassed < problem.visibleTestCases.length) {
+      status = 'wrong';
+    }
 
     // #region agent log
     fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
@@ -269,7 +305,7 @@ const runCode = async (req, res) => {
         message: 'runCode Judge0 summary',
         data: {
           visibleCount: problem.visibleTestCases.length,
-          matchedVisible: count,
+          matchedVisible: totalPassed,
           statuses: testResult.map(t => t.status && t.status.id)
         },
         timestamp: Date.now()
@@ -277,11 +313,15 @@ const runCode = async (req, res) => {
     }).catch(() => {});
     // #endregion
 
-    if (count != (problem.visibleTestCases.length)) {
-      throw new Error('Problem in the testcases');
-    }
-
-    res.status(201).send(testResult);
+    res.status(201).send({
+      status,
+      totalPassed,
+      totalTestCases: problem.visibleTestCases.length,
+      errorMessage,
+      runtime: runtime ? `${runtime.toFixed(0)} ms` : 'N/A',
+      memory: memory ? `${(memory / 1024).toFixed(2)} MB` : 'N/A',
+      results: detailedResults
+    });
   }
   catch (err) {
     // #region agent log
@@ -306,7 +346,13 @@ const runCode = async (req, res) => {
     // #endregion
 
     console.log(err);
-    res.status(500).send("Internal Server Error " + err);
+    res.status(500).send({
+      status: 'error',
+      errorMessage: "Internal Server Error: " + String(err && err.message),
+      totalPassed: 0,
+      totalTestCases: 0,
+      results: []
+    });
   }
 };
 
