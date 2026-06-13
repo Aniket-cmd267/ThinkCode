@@ -71,58 +71,7 @@ function Problem() {
     if (!isAuthenticated) {
       navigate('/')
     }
-  }, [isAuthenticated])
-  // useEffect(() => {
-  //     const fetchProblem = async () => {
-  //         setLoading(true);
-  //         try {
-  //             const { data } = await axiosClient.get(`/problem/problemById/${problemId}`);
-  //             console.log(data)
-  //             const initialCode = data?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
-  //             setProblem(data)
-  //             setCode(prevState => ({
-  //                 ...prevState,
-  //                 [selectedLanguage]: initialCode
-  //             }))
-  //             setLoading(false)
-  //             // setTestCaseHistory(data?.visibleTestCases)
-  //             // console.log(data?.visibleTestCases)
-  //         } catch (err) {
-  //             console.error('Error fetching problem: ', err);
-  //             setLoading(false)
-  //         }
-  //     }
-  //     fetchProblem();
-  // }, [problemId]);
-  // useEffect(() => {
-  //     if (problemData) {
-  //         const initialCode = problem?.startCode?.find((lang) => lang.language.toLowerCase() == langMap[selectedLanguage.toLowerCase()].toLowerCase())?.initialCode
-  //         const codeSetInMonaco = () => {
-  //             setCode((prevState) => ({
-  //                 ...prevState,
-  //                 [selectedLanguage]: initialCode
-  //             }))
-  //         }
-  //         codeSetInMonaco()
-
-  //     }
-  // }, [selectedLanguage, problemId])
-  // useEffect(() =>{
-  //     const value= code[selectedLanguage]
-  //     console.log('Hello')
-  //     dispatch(getCodeWrittenOnEditor({selectedLanguage,value}))
-  // },[problemId])
-  // useEffect(() => {
-  //     if (load) {
-  //         console.log(updatedCode)
-  //         setCode((prevState) => ({
-  //             ...prevState,
-  //             [selectedLanguage]: updatedCode
-  //         }))
-  //         // console.log(code)
-  //         dispatch(changeLoadState())
-  //     }
-  // }, [load])
+  }, [isAuthenticated]) 
 
   useEffect(() => {
     async function loadProblem() {
@@ -208,10 +157,10 @@ function Problem() {
   }
   // Console
   const showTestCases = (testcase) => {
-    if(testcase==='testcase'){
-      setActiveRightTab('code') 
+    if (testcase === 'testcase') {
+      setActiveRightTab('code')
     }
-    else{
+    else {
       setActiveRightTab('testcase')
     }
   }
@@ -228,10 +177,10 @@ function Problem() {
       }
       const response = await axiosClient.post(`/submission/run/${problemId}`, data)
       console.log("Run Code Response:", response?.data)
-      
+
       // Store the detailed test case results
       setTestCaseResults(response?.data)
-      
+
       // Switch to result tab
       setActiveRightTab('testrun')
     } catch (err) {
@@ -368,7 +317,8 @@ function Problem() {
         )}
       </section>
 
-      <section className="flex-[1.3] min-w-0 bg-[#0D0D0D] flex flex-col overflow-hidden">
+      {/* <section className="flex-[1.3] min-w-0 bg-[#2684bb] flex flex-col overflow-hidden"> */}
+      <section className="flex-[1.3] min-w-0 bg-[#121824] flex flex-col overflow-hidden border-l border-slate-800/80">
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#111111]">
           <div className="flex items-center gap-2">
             <select
@@ -386,28 +336,26 @@ function Problem() {
             <button
               type="button"
               onClick={() => setActiveRightTab('code')}
-              className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                activeRightTab === 'code'
-                  ? 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
-                  : 'border-white/10 text-slate-300 hover:bg-white/5'
-              }`}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${activeRightTab === 'code'
+                ? 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
+                : 'border-white/10 text-slate-300 hover:bg-white/5'
+                }`}
             >
               Code
             </button>
             <button
               type="button"
               onClick={() => setActiveRightTab('testrun')}
-              className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                activeRightTab === 'testrun'
-                  ? 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
-                  : 'border-white/10 text-slate-300 hover:bg-white/5'
-              }`}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${activeRightTab === 'testrun'
+                ? 'bg-[#EF4444]/10 border-[#EF4444]/40 text-[#EF4444]'
+                : 'border-white/10 text-slate-300 hover:bg-white/5'
+                }`}
             >
               Test Results
             </button>
             <button
               type="button"
-              onClick={()=>showTestCases(activeRightTab)} 
+              onClick={() => showTestCases(activeRightTab)}
               className="hidden sm:inline-flex text-xs px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 bg-transparent hover:bg-white/5 hover:text-white transition-all"
             >
               Testcase Input
@@ -475,7 +423,7 @@ function Problem() {
             </div>
           )}
 
-          {activeRightTab === "result" &&
+          {/* {activeRightTab === "result" &&
             (Object.keys(resultHistory).length !== 0 ? (
               <div
                 className={`p-4 ${resultHistory?.status === "accepted"
@@ -494,16 +442,174 @@ function Problem() {
               <div className="flex justify-center items-center flex-1 font-bold text-[#EF4444]">
                 <h1>Submit problem first</h1>
               </div>
-            ))}
+            ))} */}
+          {activeRightTab === "result" &&
+            (Object.keys(resultHistory).length !== 0 ? (
+              <div className="p-6 space-y-5 overflow-y-auto flex-1 scrollbar-thin">
 
+                {/* TOP CARD: STATUS HEADER */}
+                <div className="flex items-center justify-between border-b border-slate-700/40 pb-4">
+                  <div>
+                    <h3 className="text-xs font-bold text-white tracking-wide uppercase font-mono">
+                      Submission
+                    </h3>
+                    {/* <p className="text-[11px] text-slate-400 mt-0.5">Automated runtime assertions evaluation</p> */}
+                  </div>
+                  <div>
+                    {(() => {
+                      const s = String(resultHistory?.status || "").toLowerCase();
+                      if (s === "accepted") {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 uppercase">
+                            Accepted
+                          </span>
+                        );
+                      } else if (s === "wrong") {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-red-500/10 border border-red-500/30 text-red-400 uppercase">
+                            Wrong Answer
+                          </span>
+                        );
+                      } else if (s === "time_limit_exceeded" || s.includes("tle") || s.includes("time")) {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-amber-500/10 border border-amber-500/30 text-amber-400 uppercase">
+                            Time Limit Exceeded
+                          </span>
+                        );
+                      } else if (s === "memory_limit_exceeded" || s.includes("mle") || s.includes("memory")) {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-purple-500/10 border border-purple-500/30 text-purple-400 uppercase">
+                            Memory Limit Exceeded
+                          </span>
+                        );
+                      } else {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-slate-700/40 border border-slate-600/30 text-slate-300 uppercase">
+                            Runtime Error
+                          </span>
+                        );
+                      }
+                    })()}
+                  </div>
+                </div>
+
+                {/* CRISP METRIC HERO ACCENT DISPLAY */}
+                <div className={`p-6 rounded-xl text-center space-y-1.5 border relative overflow-hidden ${resultHistory?.status === "accepted"
+                  ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-400"
+                  : "bg-red-500/[0.02] border-red-500/20 text-red-400"
+                  }`}>
+                  <p className="text-[10px] uppercase font-mono tracking-widest opacity-80 font-bold">
+                    {resultHistory?.status === "accepted" ? "Passed" : "Failed"}
+                  </p>
+                  <h1 className="text-4xl font-black font-mono text-white tracking-tight">
+                    TestCase: {resultHistory?.testCasesPassed}
+                    <span className={resultHistory?.status === "accepted" ? "text-emerald-500" : "text-red-500"}> / </span>
+                    {resultHistory?.testCasesTotal}
+                  </h1>
+                </div>
+
+                {/* TWIN SYSTEM METRICS GRID */}
+                <div className="grid grid-cols-2 gap-3.5">
+                  <div className="bg-[#161B26] border border-slate-800 p-3.5 rounded-xl space-y-1 hover:border-slate-700/60 transition-colors">
+                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider font-mono">
+                      Memory
+                    </span>
+                    <p className="text-sm font-black font-mono text-slate-200">
+                      {formatMemory(resultHistory?.memory)}
+                    </p>
+                  </div>
+
+                  <div className="bg-[#161B26] border border-slate-800 p-3.5 rounded-xl space-y-1 hover:border-slate-700/60 transition-colors">
+                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider font-mono">
+                      RunTime
+                    </span>
+                    <p className="text-sm font-black font-mono text-slate-200">
+                      {formatRuntime(resultHistory?.runtime)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* EXCLUSIVE FAILURE DETAILED TERMINAL BLOCK */}
+                {resultHistory?.status !== "accepted" && resultHistory?.failedTestCaseDetails && (
+                  <div className="space-y-2.5 font-mono text-xs pt-2">
+                    <div className="text-slate-300 font-sans font-bold uppercase tracking-wide">
+                      Execution Mismatch Breakdown
+                    </div>
+
+                    <div className="bg-[#161B26] border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-inner">
+                      <div>
+                        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-500 block mb-1">
+                          Input Stream (`stdin`)
+                        </span>
+                        <div className="bg-[#0B0F19] border border-slate-800 text-slate-200 p-2.5 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-24 break-all">
+                          {resultHistory.failedTestCaseDetails.input}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-400 block mb-1">
+                            Expected Output
+                          </span>
+                          <div className="bg-[#0B0F19] border border-emerald-950/40 text-emerald-400 p-2.5 rounded-lg overflow-x-auto font-bold break-all">
+                            {resultHistory.failedTestCaseDetails.expected}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-red-400 block mb-1">
+                            Your Output
+                          </span>
+                          <div className="bg-[#0B0F19] border border-red-950/40 text-red-400 p-2.5 rounded-lg overflow-x-auto font-bold break-all">
+                            {resultHistory.failedTestCaseDetails.received || "No Output"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TRACEBACK RUNTIME COMPILER ERRORS DIAGNOSTIC */}
+                {resultHistory?.status !== "accepted" && resultHistory?.errorMessage && (
+                  <div className="space-y-1.5 font-mono text-xs pt-1">
+                    <span className="text-red-400 font-sans font-bold uppercase tracking-wider block">
+                      Diagnostic Traceback Stack:
+                    </span>
+                    <pre className="w-full bg-[#161B26] border border-red-500/20 p-3.5 rounded-xl text-red-300 overflow-x-auto whitespace-pre-wrap max-h-36 shadow-inner">
+                      {resultHistory.errorMessage}
+                    </pre>
+                  </div>
+                )}
+
+              </div>
+            ) : (
+              <div className="flex flex-col justify-center items-center flex-1 space-y-2 p-6 bg-[#0F131C]">
+                {/* <div className="p-3 bg-red-500/10 rounded-full text-[#EF4444] animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="font-mono text-xs font-bold uppercase tracking-widest text-slate-400">
+            Awaiting Evaluation
+          </h1>
+          <p className="text-xs text-slate-500 text-center max-w-xs">
+            Submit your solution
+          </p> */}
+              </div>
+            ))}
           {activeRightTab === "testrun" && testCaseResults && (
             <TestCaseResults
-              results={testCaseResults.results}
-              totalTestCases={testCaseResults.totalTestCases}
-              status={testCaseResults.status}
-              errorMessage={testCaseResults.errorMessage}
-              runtime={testCaseResults.runtime}
-              memory={testCaseResults.memory}
+              // Run Code states
+              results={runResult?.results} // Array of visible test cases from running
+
+              // Submit Code summary states
+              status={submitResult?.status || runResult?.status}
+              errorMessage={submitResult?.errorMessage || runResult?.errorMessage}
+              runtime={submitResult?.runtime || runResult?.runtime}
+              memory={submitResult?.memory || runResult?.memory}
+              failedTestCaseDetails={submitResult?.failedTestCaseDetails}
+
+              // Totals
+              totalTestCases={submitResult?.testCasesTotal || runResult?.totalTestCases}
             />
           )}
 
