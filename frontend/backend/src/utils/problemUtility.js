@@ -40,11 +40,7 @@ const submitBatch = async (submissions) => {
 }
 
 
-const waiting = async (timer) => {
-  setTimeout(() => {
-    return 1;
-  }, timer);
-}
+const waiting = (timer) => new Promise((resolve) => setTimeout(resolve, timer));
 
 // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
 
@@ -67,15 +63,17 @@ const submitToken = async (resultToken) => {
   async function fetchData() {
     try {
       const response = await axios.request(options);
+      if (!response?.data?.submissions) {
+        throw new Error('Judge0 did not return submissions');
+      }
       return response.data;
     } catch (error) {
-      console.error(error);
+      console.error('submitToken fetch error:', error);
+      throw error;
     }
   }
 
-
   while (true) {
-
     const result = await fetchData();
     console.log("Current Statuses:", result.submissions.map(s => s.status?.description || s.status.id));
     const IsResultObtained = result.submissions.every((r) => r.status.id > 2);

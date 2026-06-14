@@ -71,7 +71,7 @@ function Problem() {
     if (!isAuthenticated) {
       navigate('/')
     }
-  }, [isAuthenticated]) 
+  }, [isAuthenticated])
 
   useEffect(() => {
     async function loadProblem() {
@@ -197,32 +197,43 @@ function Problem() {
     }
   }
   // Submission 
+
   async function submitCode(code, lang) {
     try {
       const driverBefore = `${problemData?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
       const driverAfter = `${problemData?.driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
-      // console.log("Hello",driverBefore,"World", driverAfter)
       const fullCode = driverBefore + code + driverAfter
-      console.log(fullCode)
+      
       const data = {
         code,
         fullCode,
         lang
       }
+      
+      // Reset the panel state to a clean loading state instantly 
+      setResultHistory({ status: 'pending' })
+      setActiveRightTab('result')
+
       const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
-      console.log(response)
-      console.log(response?.data)
-      if (response?.data?.status === 'accepted') {
-        alert('Problem solved successfully')
-      }
-      setSubmissionHistory((prev) => [response?.data, ...prev])
+      console.log("Submit Code Response Data Payload:", response?.data)
+
+      // Commit full metric objects cleanly into state hooks
       setResultHistory(response?.data)
+      setSubmissionHistory((prev) => [response?.data, ...prev])
+      
       setActiveRightTab('result')
       setActiveLeftTab('Submissions')
       await fetchSubmissionHistory()
-      // alert('Problem Submitted successfully')
+
     } catch (err) {
-      console.log(err.message)
+      console.error("Submission Trigger Network Fault:", err)
+      // Display client-side or server crash errors in the results view
+      setResultHistory({
+        status: 'error',
+        errorMessage: err.response?.data?.errorMessage || err.response?.data || err.message || 'Submission process broken'
+      })
+      setActiveRightTab('result')
+      setActiveLeftTab('Submissions')
     }
   }
   useEffect(() => {  // All submissions made till now by same user for same problem fetch all 
@@ -422,194 +433,126 @@ function Problem() {
               />
             </div>
           )}
+          {activeRightTab === "result" && (
+            Object.keys(resultHistory).length !== 0 ? (
+              <div className="p-6 space-y-5 overflow-y-auto flex-1 bg-[#0D0D0D] text-slate-200 scrollbar-thin select-text animate-in fade-in duration-200">
 
-          {/* {activeRightTab === "result" &&
-            (Object.keys(resultHistory).length !== 0 ? (
-              <div
-                className={`p-4 ${resultHistory?.status === "accepted"
-                  ? "bg-emerald-950 text-emerald-300"
-                  : "bg-[#3b0b0b] text-rose-200"
-                  }`}
-              >
-                <h2>
-                  TestCase: {resultHistory?.testCasesPassed}/
-                  {resultHistory?.testCasesTotal}
-                </h2>
-                <h3>Memory: {formatMemory(resultHistory?.memory)}</h3>
-                <h3>Time: {formatRuntime(resultHistory?.runtime)}</h3>
-              </div>
-            ) : (
-              <div className="flex justify-center items-center flex-1 font-bold text-[#EF4444]">
-                <h1>Submit problem first</h1>
-              </div>
-            ))} */}
-          {activeRightTab === "result" &&
-            (Object.keys(resultHistory).length !== 0 ? (
-              <div className="p-6 space-y-5 overflow-y-auto flex-1 scrollbar-thin">
-
-                {/* TOP CARD: STATUS HEADER */}
-                <div className="flex items-center justify-between border-b border-slate-700/40 pb-4">
-                  <div>
-                    <h3 className="text-xs font-bold text-white tracking-wide uppercase font-mono">
-                      Submission
-                    </h3>
-                    {/* <p className="text-[11px] text-slate-400 mt-0.5">Automated runtime assertions evaluation</p> */}
-                  </div>
+                {/* HEADER WITH CORRECT COLOR-CODED STATUS BADGES */}
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                  <h3 className="text-xs font-bold text-white tracking-wide uppercase font-mono">Execution Feedback</h3>
                   <div>
                     {(() => {
-                      const s = String(resultHistory?.status || "").toLowerCase();
-                      if (s === "accepted") {
-                        return (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 uppercase">
-                            Accepted
-                          </span>
-                        );
-                      } else if (s === "wrong") {
-                        return (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-red-500/10 border border-red-500/30 text-red-400 uppercase">
-                            Wrong Answer
-                          </span>
-                        );
-                      } else if (s === "time_limit_exceeded" || s.includes("tle") || s.includes("time")) {
-                        return (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-amber-500/10 border border-amber-500/30 text-amber-400 uppercase">
-                            Time Limit Exceeded
-                          </span>
-                        );
-                      } else if (s === "memory_limit_exceeded" || s.includes("mle") || s.includes("memory")) {
-                        return (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-purple-500/10 border border-purple-500/30 text-purple-400 uppercase">
-                            Memory Limit Exceeded
-                          </span>
-                        );
-                      } else {
-                        return (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold font-mono tracking-wider bg-slate-700/40 border border-slate-600/30 text-slate-300 uppercase">
-                            Runtime Error
-                          </span>
-                        );
-                      }
+                      const s = String(resultHistory?.status || "").toLowerCase().trim();
+                      if (s === "accepted") return <span className="px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold font-mono uppercase">Accepted</span>;
+                      if (s === "wrong" || s === "wrong answer") return <span className="px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold font-mono uppercase">Wrong Answer</span>;
+                      if (s.includes("time") || s === "tle" || s === "time_limit_exceeded") return <span className="px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold font-mono uppercase">Time Limit Exceeded</span>;
+                      if (s.includes("memory") || s === "mle" || s === "memory_limit_exceeded") return <span className="px-2.5 py-1 rounded bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-bold font-mono uppercase">Memory Limit Exceeded</span>;
+                      return <span className="px-2.5 py-1 rounded bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold font-mono uppercase">{resultHistory?.status || "Runtime Error"}</span>;
                     })()}
                   </div>
                 </div>
 
-                {/* CRISP METRIC HERO ACCENT DISPLAY */}
-                <div className={`p-6 rounded-xl text-center space-y-1.5 border relative overflow-hidden ${resultHistory?.status === "accepted"
-                  ? "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-400"
-                  : "bg-red-500/[0.02] border-red-500/20 text-red-400"
-                  }`}>
-                  <p className="text-[10px] uppercase font-mono tracking-widest opacity-80 font-bold">
-                    {resultHistory?.status === "accepted" ? "Passed" : "Failed"}
-                  </p>
-                  <h1 className="text-4xl font-black font-mono text-white tracking-tight">
-                    TestCase: {resultHistory?.testCasesPassed}
-                    <span className={resultHistory?.status === "accepted" ? "text-emerald-500" : "text-red-500"}> / </span>
-                    {resultHistory?.testCasesTotal}
-                  </h1>
-                </div>
+                {/* METRIC HERO CONTAINER CARD */}
+                {(() => {
+                  const s = String(resultHistory?.status || "").toLowerCase().trim();
+                  let bgStyle = "bg-slate-900/40 border-slate-800 text-slate-400";
+                  let title = "Evaluation Ended";
+                  let description = "Your code execution completed processing.";
 
-                {/* TWIN SYSTEM METRICS GRID */}
-                <div className="grid grid-cols-2 gap-3.5">
-                  <div className="bg-[#161B26] border border-slate-800 p-3.5 rounded-xl space-y-1 hover:border-slate-700/60 transition-colors">
-                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider font-mono">
-                      Memory
-                    </span>
-                    <p className="text-sm font-black font-mono text-slate-200">
-                      {formatMemory(resultHistory?.memory)}
-                    </p>
-                  </div>
+                  if (s === "accepted") {
+                    bgStyle = "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-400";
+                    title = "Verification Passed";
+                    description = "Your logic matched all hidden execution test criteria.";
+                  } else if (s === "wrong" || s === "wrong answer") {
+                    bgStyle = "bg-rose-500/[0.02] border-rose-500/20 text-rose-400";
+                    title = "Assertion Mismatch";
+                    description = "Your solution generated values that differed from expected output arrays.";
+                  } else if (s.includes("time") || s === "tle" || s === "time_limit_exceeded") {
+                    bgStyle = "bg-amber-500/[0.02] border-amber-500/20 text-amber-400";
+                    title = "Timeout Intercepted";
+                    description = "Your algorithm's time complexity exceeded limits on large-scale datasets.";
+                  } else if (s.includes("memory") || s === "mle" || s === "memory_limit_exceeded") {
+                    bgStyle = "bg-purple-500/[0.02] border-purple-500/20 text-purple-400";
+                    title = "Memory Overflow";
+                    description = "Heap allocations went outside your language's sandbox memory threshold.";
+                  }
 
-                  <div className="bg-[#161B26] border border-slate-800 p-3.5 rounded-xl space-y-1 hover:border-slate-700/60 transition-colors">
-                    <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider font-mono">
-                      RunTime
-                    </span>
-                    <p className="text-sm font-black font-mono text-slate-200">
-                      {formatRuntime(resultHistory?.runtime)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* EXCLUSIVE FAILURE DETAILED TERMINAL BLOCK */}
-                {resultHistory?.status !== "accepted" && resultHistory?.failedTestCaseDetails && (
-                  <div className="space-y-2.5 font-mono text-xs pt-2">
-                    <div className="text-slate-300 font-sans font-bold uppercase tracking-wide">
-                      Execution Mismatch Breakdown
+                  return (
+                    <div className={`p-6 rounded-xl text-center space-y-1.5 border relative overflow-hidden ${bgStyle}`}>
+                      <p className="text-[10px] uppercase font-mono tracking-widest opacity-80 font-bold">{title}</p>
+                      <h1 className="text-3xl font-black font-mono text-white tracking-tight">
+                        TestCase: {resultHistory?.testCasesPassed ?? 0} / {resultHistory?.testCasesTotal ?? 0}
+                      </h1>
+                      <p className="text-[11px] text-slate-400 max-w-xs mx-auto">{description}</p>
                     </div>
+                  );
+                })()}
 
-                    <div className="bg-[#161B26] border border-slate-800 rounded-xl p-4 space-y-3.5 shadow-inner">
+                {/* PERFORMANCE HARDWARE METRICS GRID */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-[#141414] border border-slate-800 p-3.5 rounded-xl font-mono text-xs shadow-inner">
+                    <span className="text-slate-500 font-bold block mb-1">Execution Time</span>
+                    <span className="text-sm font-bold text-slate-200">{resultHistory?.runtime || "-- ms"}</span>
+                  </div>
+                  <div className="bg-[#141414] border border-slate-800 p-3.5 rounded-xl font-mono text-xs shadow-inner">
+                    <span className="text-slate-500 font-bold block mb-1">Memory Allocation</span>
+                    <span className="text-sm font-bold text-slate-200">{resultHistory?.memory || "-- MB"}</span>
+                  </div>
+                </div>
+
+                {/* HIDDEN LOG EXPANDERS FOR DETAILED WRONG MISMATECHES */}
+                {String(resultHistory?.status || "").toLowerCase().includes("wrong") && resultHistory?.failedTestCaseDetails && (
+                  <div className="space-y-2 font-mono text-xs pt-2">
+                    <span className="text-slate-300 font-sans font-bold uppercase tracking-wide block">Mismatch Node Breakdown</span>
+                    <div className="bg-[#141414] border border-slate-800 rounded-xl p-4 space-y-3 shadow-inner">
                       <div>
-                        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                          Input Stream (`stdin`)
-                        </span>
-                        <div className="bg-[#0B0F19] border border-slate-800 text-slate-200 p-2.5 rounded-lg overflow-x-auto whitespace-pre-wrap max-h-24 break-all">
-                          {resultHistory.failedTestCaseDetails.input}
-                        </div>
+                        <span className="text-[10px] text-slate-500 block mb-1">Input Stream</span>
+                        <pre className="bg-black/40 p-2.5 rounded border border-slate-800 text-slate-300 overflow-x-auto whitespace-pre-wrap">{resultHistory.failedTestCaseDetails.input}</pre>
                       </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-400 block mb-1">
-                            Expected Output
-                          </span>
-                          <div className="bg-[#0B0F19] border border-emerald-950/40 text-emerald-400 p-2.5 rounded-lg overflow-x-auto font-bold break-all">
-                            {resultHistory.failedTestCaseDetails.expected}
-                          </div>
+                          <span className="text-[10px] text-emerald-500 block mb-1">Expected Output</span>
+                          <pre className="bg-black/40 p-2.5 rounded border border-slate-800 text-emerald-400 font-bold overflow-x-auto">{resultHistory.failedTestCaseDetails.expected}</pre>
                         </div>
                         <div>
-                          <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-red-400 block mb-1">
-                            Your Output
-                          </span>
-                          <div className="bg-[#0B0F19] border border-red-950/40 text-red-400 p-2.5 rounded-lg overflow-x-auto font-bold break-all">
-                            {resultHistory.failedTestCaseDetails.received || "No Output"}
-                          </div>
+                          <span className="text-[10px] text-rose-500 block mb-1">Your Output</span>
+                          <pre className="bg-black/40 p-2.5 rounded border border-slate-800 text-rose-400 font-bold overflow-x-auto">{resultHistory.failedTestCaseDetails.received || "No Output"}</pre>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* TRACEBACK RUNTIME COMPILER ERRORS DIAGNOSTIC */}
-                {resultHistory?.status !== "accepted" && resultHistory?.errorMessage && (
+                {/* SYSTEM CRASH OR COMPILER DIAGNOSTIC EXCEPTION ERROR LOG BOX */}
+                {resultHistory?.errorMessage && (
                   <div className="space-y-1.5 font-mono text-xs pt-1">
-                    <span className="text-red-400 font-sans font-bold uppercase tracking-wider block">
-                      Diagnostic Traceback Stack:
-                    </span>
-                    <pre className="w-full bg-[#161B26] border border-red-500/20 p-3.5 rounded-xl text-red-300 overflow-x-auto whitespace-pre-wrap max-h-36 shadow-inner">
+                    <span className="text-rose-400 font-sans font-bold uppercase tracking-wide block">Diagnostic Log Trace:</span>
+                    <pre className="w-full bg-[#141414] border border-rose-900/30 p-3.5 rounded-xl text-rose-300 overflow-x-auto whitespace-pre-wrap max-h-48 shadow-inner">
                       {resultHistory.errorMessage}
                     </pre>
                   </div>
                 )}
-
               </div>
             ) : (
-              <div className="flex flex-col justify-center items-center flex-1 space-y-2 p-6 bg-[#0F131C]">
-                {/* <div className="p-3 bg-red-500/10 rounded-full text-[#EF4444] animate-pulse">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h1 className="font-mono text-xs font-bold uppercase tracking-widest text-slate-400">
-            Awaiting Evaluation
-          </h1>
-          <p className="text-xs text-slate-500 text-center max-w-xs">
-            Submit your solution
-          </p> */}
+              <div className="flex flex-col justify-center items-center flex-1 p-6 text-slate-500 text-xs font-mono uppercase tracking-widest bg-[#0D0D0D]">
+                Submit problem first
               </div>
-            ))}
+            ))
+          }
           {activeRightTab === "testrun" && testCaseResults && (
             <TestCaseResults
               // Run Code states
-              results={runResult?.results} // Array of visible test cases from running
+              results={testCaseResults?.results} // Array of visible test cases from running
 
-              // Submit Code summary states
-              status={submitResult?.status || runResult?.status}
-              errorMessage={submitResult?.errorMessage || runResult?.errorMessage}
-              runtime={submitResult?.runtime || runResult?.runtime}
-              memory={submitResult?.memory || runResult?.memory}
-              failedTestCaseDetails={submitResult?.failedTestCaseDetails}
+              // Run summary states
+              status={testCaseResults?.status}
+              errorMessage={testCaseResults?.errorMessage}
+              runtime={testCaseResults?.runtime}
+              memory={testCaseResults?.memory}
+              failedTestCaseDetails={testCaseResults?.failedTestCaseDetails}
 
               // Totals
-              totalTestCases={submitResult?.testCasesTotal || runResult?.totalTestCases}
+              totalTestCases={testCaseResults?.testCasesTotal}
             />
           )}
 

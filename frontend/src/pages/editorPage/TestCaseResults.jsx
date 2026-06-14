@@ -59,8 +59,18 @@ export default function TestCaseResults({ results, totalTestCases, status, error
           border: "border-purple-600/40",
           icon: Cpu
         };
+      case "compile_error":
+      case "compile error":
+        return {
+          label: "Compilation Error",
+          color: "text-slate-400",
+          bg: "bg-slate-900/60",
+          border: "border-slate-700/50",
+          icon: ShieldAlert
+        };
       case "runtime_error":
       case "runtime":
+      case "error":
         return {
           label: "Runtime Error",
           color: "text-orange-400",
@@ -68,9 +78,17 @@ export default function TestCaseResults({ results, totalTestCases, status, error
           border: "border-orange-600/40",
           icon: AlertCircle
         };
+      case "output_limit_exceeded":
+        return {
+          label: "Output Limit Exceeded",
+          color: "text-fuchsia-400",
+          bg: "bg-fuchsia-950/40",
+          border: "border-fuchsia-600/40",
+          icon: Zap
+        };
       default:
         return {
-          label: "Compilation Error",
+          label: "Unknown Error",
           color: "text-slate-400",
           bg: "bg-slate-900/60",
           border: "border-slate-700/50",
