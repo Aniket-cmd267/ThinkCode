@@ -461,16 +461,16 @@ function Problem() {
 
                   if (s === "accepted") {
                     bgStyle = "bg-emerald-500/[0.02] border-emerald-500/20 text-emerald-400";
-                    title = "Verification Passed";
-                    description = "Your logic matched all hidden execution test criteria.";
+                    title = "Passed";
+                    description = "All Testcases Passed";
                   } else if (s === "wrong" || s === "wrong answer") {
                     bgStyle = "bg-rose-500/[0.02] border-rose-500/20 text-rose-400";
-                    title = "Assertion Mismatch";
-                    description = "Your solution generated values that differed from expected output arrays.";
+                    title = "Wrong Answer";
+                    description = "Solution is incorrect";
                   } else if (s.includes("time") || s === "tle" || s === "time_limit_exceeded") {
                     bgStyle = "bg-amber-500/[0.02] border-amber-500/20 text-amber-400";
-                    title = "Timeout Intercepted";
-                    description = "Your algorithm's time complexity exceeded limits on large-scale datasets.";
+                    title = "Time Limit Exceeded";
+                    description = "Algorithm's time limit exceeded";
                   } else if (s.includes("memory") || s === "mle" || s === "memory_limit_exceeded") {
                     bgStyle = "bg-purple-500/[0.02] border-purple-500/20 text-purple-400";
                     title = "Memory Overflow";
@@ -488,22 +488,20 @@ function Problem() {
                   );
                 })()}
 
-                {/* PERFORMANCE HARDWARE METRICS GRID */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#141414] border border-slate-800 p-3.5 rounded-xl font-mono text-xs shadow-inner">
                     <span className="text-slate-500 font-bold block mb-1">Execution Time</span>
-                    <span className="text-sm font-bold text-slate-200">{resultHistory?.runtime || "-- ms"}</span>
+                    <span className="text-sm font-bold text-slate-200">{resultHistory?.runtime || "--"}</span>
                   </div>
                   <div className="bg-[#141414] border border-slate-800 p-3.5 rounded-xl font-mono text-xs shadow-inner">
                     <span className="text-slate-500 font-bold block mb-1">Memory Allocation</span>
-                    <span className="text-sm font-bold text-slate-200">{resultHistory?.memory || "-- MB"}</span>
+                    <span className="text-sm font-bold text-slate-200">{resultHistory?.memory || "-- "}</span>
                   </div>
                 </div>
 
                 {/* HIDDEN LOG EXPANDERS FOR DETAILED WRONG MISMATECHES */}
                 {String(resultHistory?.status || "").toLowerCase().includes("wrong") && resultHistory?.failedTestCaseDetails && (
                   <div className="space-y-2 font-mono text-xs pt-2">
-                    <span className="text-slate-300 font-sans font-bold uppercase tracking-wide block">Mismatch Node Breakdown</span>
                     <div className="bg-[#141414] border border-slate-800 rounded-xl p-4 space-y-3 shadow-inner">
                       <div>
                         <span className="text-[10px] text-slate-500 block mb-1">Input Stream</span>
@@ -522,11 +520,8 @@ function Problem() {
                     </div>
                   </div>
                 )}
-
-                {/* SYSTEM CRASH OR COMPILER DIAGNOSTIC EXCEPTION ERROR LOG BOX */}
                 {resultHistory?.errorMessage && (
                   <div className="space-y-1.5 font-mono text-xs pt-1">
-                    <span className="text-rose-400 font-sans font-bold uppercase tracking-wide block">Diagnostic Log Trace:</span>
                     <pre className="w-full bg-[#141414] border border-rose-900/30 p-3.5 rounded-xl text-rose-300 overflow-x-auto whitespace-pre-wrap max-h-48 shadow-inner">
                       {resultHistory.errorMessage}
                     </pre>
