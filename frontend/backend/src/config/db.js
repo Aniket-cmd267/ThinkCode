@@ -1,7 +1,10 @@
 const mongoose= require('mongoose')
-// require('dotenv').config();
 async function main() {
-    await mongoose.connect(process.env.DB_CONNECT_STRING)
+    const uri = process.env.DB_CONNECT_STRING;
+    if (!uri) {
+        throw new Error('Missing required environment variable: DB_CONNECT_STRING');
+    }
+    await mongoose.connect(uri);
 }
 
 module.exports = main;

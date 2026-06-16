@@ -26,6 +26,7 @@ const createProblem = async (req, res) => {
         expectedTotalMatches += visibleTestCases.length;
 
         const solution = before + completeCode + after;
+        // console.log(solution)
         const languageId = getLanguageById(language);
 
         // Create Batch submission with Base64 encoding
@@ -113,54 +114,110 @@ const createProblem = async (req, res) => {
 const updateProblem = async (req, res) => {
 
   const { id } = req.params;
-  console.log(req.body)
   const { title, description, difficulty, tags,
-    visibleTestCases, hiddenTestCases, startCode,
+    visibleTestCases, hiddenTestCases, startCode, driverCode,
     referenceSolution, problemCreator
   } = req.body;
-  console.log(description)
-  try {
 
+  try {
     if (!id) {
       return res.status(400).send("Missing ID Field");
     }
 
     const DsaProblem = await Problem.findById(id);
     if (!DsaProblem) {
-      return res.status(404).send("ID is not persent in server");
+      return res.status(404).send("ID is not present in server");
     }
 
-    for (const { language, completeCode } of referenceSolution) {
-      const languageId = getLanguageById(language);
-      // I am creating Batch submission
-      const submissions = visibleTestCases.map((testcase) => ({
-        source_code: completeCode,
-        language_id: languageId,
-        stdin: testcase.input,
-        expected_output: testcase.output
-      }));
+    if (!Array.isArray(referenceSolution) || referenceSolution.length === 0) {
+      return res.status(400).send("Reference solution is required");
+    }
 
-      const submitResult = await submitBatch(submissions);
-      console.log(submitResult);
-      const resultToken = submitResult.map((value) => value.token);
-      // ["db54881d-bcf5-4c7b-a2e3-d33fe7e25de7","ecc52a9b-ea80-4a00-ad50-4ab6cc3bb2a1","1b35ec3b-5776-48ef-b646-d5522bdeb2cc"]
+    if (!Array.isArray(visibleTestCases) || visibleTestCases.length === 0) {
+      return res.status(400).send("Visible test cases are required");
+    }
 
-      const testResult = await submitToken(resultToken);
+    if (!Array.isArray(driverCode) || driverCode.length === 0) {
+      return res.status(400).send("Driver code is required");
+    }
 
-      console.log(testResult);
-      for (const test of testResult) {
-        if (test.status_id != 3) {
-          return res.status(400).send("Error Occured");
+    // Validate reference solutions by testing with driver code
+    for (const { lang, before, after } of driverCode) {
+      for (const { language, completeCode } of referenceSolution) {
+        if (lang.toLowerCase() !== language.toLowerCase()) {
+          continue;
+        }
+
+        const languageId = getLanguageById(language);
+        if (!languageId) {
+          return res.status(400).send(`Unsupported language: ${language}`);
+        }
+
+        // Concatenate driver code with reference solution
+        const solution = before + completeCode + after;
+
+        // Create batch submission with Base64 encoding
+        const submissions = visibleTestCases.map((testcase) => ({
+          source_code: Buffer.from(solution).toString('base64'),
+          language_id: languageId,
+          stdin: Buffer.from(testcase.input || "").toString('base64'),
+          expected_output: Buffer.from(testcase.output || "").toString('base64')
+        }));
+
+        const submitResult = await submitBatch(submissions);
+        const resultToken = submitResult.map((value) => value.token);
+
+        // Polling mechanism for Judge0
+        let testResult = [];
+        let maxRetries = 10;
+        let isProcessing = true;
+
+        while (maxRetries > 0 && isProcessing) {
+          testResult = await submitToken(resultToken);
+          const stillProcessing = testResult.some(test => test.status && test.status.id <= 2);
+          
+          if (!stillProcessing) {
+            isProcessing = false;
+          } else {
+            await delay(1500);
+            maxRetries--;
+          }
+        }
+
+        if (isProcessing) {
+          return res.status(400).send({
+            error: `Judge0 processing timed out for language: ${language}`
+          });
+        }
+
+        // Validate test results
+        for (const test of testResult) {
+          const statusId = test.status?.id;
+          if (statusId !== 3) {
+            const statusDescription = test.status?.description || 'unknown';
+            const stderr = test.stderr ? Buffer.from(test.stderr, 'base64').toString('utf8') : '';
+            const compileOutput = test.compile_output ? Buffer.from(test.compile_output, 'base64').toString('utf8') : '';
+            
+            console.error('Judge0 update failure', { language, statusId, statusDescription, stderr, compileOutput });
+            return res.status(400).send({
+              error: 'Judge0 validation failed',
+              language,
+              statusId,
+              statusDescription,
+              stderr,
+              compileOutput,
+            });
+          }
         }
       }
     }
+
     const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body }, { runValidators: true, new: true });
-    console.log(newProblem)
     res.status(200).send(newProblem);
   }
   catch (err) {
-    console.log(err)
-    res.status(500).send("Error: " + err);
+    console.error(err.stack || err);
+    res.status(500).send({ error: err.message || String(err) });
   }
 }
 
@@ -188,6 +245,8 @@ const getProblemById = async (req, res) => {
   try {
     if (!id)
       return res.status(400).send("ID is Missing");
+
+    console.log('Hello')
     const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution driverCode');
     if (!getProblem)
       return res.status(404).send("Problem is Missing");

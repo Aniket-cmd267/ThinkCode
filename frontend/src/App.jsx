@@ -32,12 +32,12 @@ function App() {
   }
   return (
     <Routes>
-      <Route path="/" element={ isAuthenticated ? <Navigate to='/problem' />:<LandingPage/>}></Route>
       <Route path="*" element={isAuthenticated ? <Navigate to='/problem' /> : <RouteNotExist></RouteNotExist>}></Route>
       <Route path="/signup" element={!(isAuthenticated) ? <Signup /> : <Navigate to='/problem' />}></Route>
       <Route path="/login" element={!(isAuthenticated) ? <Login /> : <Navigate to='/problem' />}></Route>
       <Route path="/profile" element={!isAuthenticated ? <Navigate to='/login'/> : <Profile></Profile>}></Route>
       <Route path="/" element={<ProfileNavigation></ProfileNavigation>}>
+        <Route path="/" element={ isAuthenticated ? <Navigate to='/problem' />:<LandingPage/>}></Route>
         <Route path="/problem" element={(isAuthenticated) ? <Homepage /> : <Navigate to='/signup'></Navigate>}></Route>
         <Route path="/admin"
           element={(isAuthenticated) && user?.role === 'admin' ? <AdminPanel /> : <Navigate to='/problem' />}
@@ -47,7 +47,7 @@ function App() {
         <Route path="/admin/update"
           element={(isAuthenticated) && user?.role === 'admin' ? <AdminUpdate /> : <Navigate to='/problem' />}></Route>
         <Route path="/admin/update/:id"
-          element={(isAuthenticated) && user?.role === 'admin' ? <UpdateProblem /> : <Navigate to='/problem' />}></Route>
+          element={(isAuthenticated) && user?.role === 'admin' ? <UpdateProblem/> : <Navigate to='/problem' />}></Route>
         <Route path="/admin/delete"
           element={(isAuthenticated && user?.role === 'admin') ? <AdminDelete /> : <Navigate to='/problem' />}></Route>
 

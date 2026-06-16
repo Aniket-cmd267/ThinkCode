@@ -70,7 +70,9 @@ export default function AdminCreate() {
 
     async function onSubmit(data) {
         try {
-            await axiosClient.post('/problem/create', data);
+            console.log(data)
+            const result= await axiosClient.post('/problem/create', data);
+            console.log(result);
             navigate('/');
             alert('Problem deployed successfully');
         } catch (error) {

@@ -258,9 +258,9 @@ function Problem() {
     }
   }
   return (
-    <div className="h-[calc(100vh-64px)] bg-[#0D0D0D] text-slate-100 flex overflow-hidden">
+    <div className="h-screen w-screen bg-[#0D0D0D] text-slate-100 flex overflow-hidden fixed top-16 left-0 right-0 bottom-0">
       <aside
-        className="relative flex flex-col border-r border-white/[0.06] bg-[#111111] transition-all duration-300 w-[72px] shrink-0"
+        className="relative flex flex-col border-r border-white/[0.06] bg-[#111111] transition-all duration-300 w-[72px] shrink-0 h-full overflow-hidden"
       >
         <div className="mt-5 flex flex-col gap-2 px-2">
           {[
@@ -301,11 +301,11 @@ function Problem() {
         </div>
       </aside>
 
-      <section className="flex-[1.3] min-w-0 bg-[#141414] border-r border-white/[0.06] flex flex-col overflow-hidden">
+      <section className="flex-1 min-w-0 bg-[#141414] border-r border-white/[0.06] flex flex-col overflow-hidden h-full">
         {problemData && (
           <>
 
-            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 h-full">
               {activeLeftTab === "description" && (
                 <Description problem={problemData} />
               )}
@@ -329,8 +329,8 @@ function Problem() {
       </section>
 
       {/* <section className="flex-[1.3] min-w-0 bg-[#2684bb] flex flex-col overflow-hidden"> */}
-      <section className="flex-[1.3] min-w-0 bg-[#121824] flex flex-col overflow-hidden border-l border-slate-800/80">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#111111]">
+      <section className="flex-1 min-w-0 bg-[#121824] flex flex-col overflow-hidden border-l border-slate-800/80 h-full">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#111111] flex-shrink-0">
           <div className="flex items-center gap-2">
             <select
               className="bg-[#1A1A1A] border border-white/10 rounded-lg text-xs text-slate-100 px-3 py-2 outline-none focus:border-[#EF4444]/60 focus:ring-0"
@@ -393,10 +393,9 @@ function Problem() {
             </button>
           </div>
         </div>
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-hidden">
           {activeRightTab === "code" && (
-            <div className="flex-1">
-              <Editor
+            <div className="h-full w-full">
                 height="100%"
                 language={getLanguageForMonaco(selectedLanguage)}
                 onChange={handleEditorChange}
@@ -435,7 +434,7 @@ function Problem() {
           )}
           {activeRightTab === "result" && (
             Object.keys(resultHistory).length !== 0 ? (
-              <div className="p-6 space-y-5 overflow-y-auto flex-1 bg-[#0D0D0D] text-slate-200 scrollbar-thin select-text animate-in fade-in duration-200">
+              <div className="overflow-y-auto h-full w-full p-6 space-y-5 bg-[#0D0D0D] text-slate-200 scrollbar-thin select-text animate-in fade-in duration-200">
 
                 {/* HEADER WITH CORRECT COLOR-CODED STATUS BADGES */}
                 <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
@@ -529,32 +528,34 @@ function Problem() {
                 )}
               </div>
             ) : (
-              <div className="flex flex-col justify-center items-center flex-1 p-6 text-slate-500 text-xs font-mono uppercase tracking-widest bg-[#0D0D0D]">
+              <div className="flex flex-col justify-center items-center h-full w-full p-6 text-slate-500 text-xs font-mono uppercase tracking-widest bg-[#0D0D0D]">
                 Submit problem first
               </div>
             ))
           }
           {activeRightTab === "testrun" && testCaseResults && (
-            <TestCaseResults
-              // Run Code states
-              results={testCaseResults?.results} // Array of visible test cases from running
+            <div className="h-full w-full overflow-y-auto">
+              <TestCaseResults
+                // Run Code states
+                results={testCaseResults?.results} // Array of visible test cases from running
 
-              // Run summary states
-              status={testCaseResults?.status}
-              errorMessage={testCaseResults?.errorMessage}
-              runtime={testCaseResults?.runtime}
-              memory={testCaseResults?.memory}
-              failedTestCaseDetails={testCaseResults?.failedTestCaseDetails}
+                // Run summary states
+                status={testCaseResults?.status}
+                errorMessage={testCaseResults?.errorMessage}
+                runtime={testCaseResults?.runtime}
+                memory={testCaseResults?.memory}
+                failedTestCaseDetails={testCaseResults?.failedTestCaseDetails}
 
-              // Totals
-              totalTestCases={testCaseResults?.testCasesTotal}
-            />
+                // Totals
+                totalTestCases={testCaseResults?.testCasesTotal}
+              />
+            </div>
           )}
 
           {activeRightTab === "testcase" && problemData && (
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="flex-1 overflow-y-auto bg-[#0D0D0D] px-4 py-4 space-y-4"
+              className="h-full overflow-y-auto bg-[#0D0D0D] px-4 py-4 space-y-4"
             >
               {visibleFields.map((field, i) => (
                 <div
