@@ -6,6 +6,7 @@ import z from "zod";
 import axiosClient from "../utils/axiosClient";
 import { m, LazyMotion, domAnimation } from "framer-motion";
 import { Plus, Trash2, Terminal, Code, Database, Eye, Save, RotateCcw, Layers } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const problemSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -48,6 +49,7 @@ const problemSchema = z.object({
 
 export default function UpdateProblem({ onUpdateSuccess }) {
     const { id: problemId } = useParams();
+    const navigate= useNavigate();
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
         resolver: zodResolver(problemSchema),
         defaultValues: {
@@ -104,77 +106,81 @@ export default function UpdateProblem({ onUpdateSuccess }) {
         try {
             await axiosClient.put(`/problem/update/${problemId}`, data);
             alert("Problem configuration updated successfully.");
+            navigate('/admin');
             if (onUpdateSuccess) onUpdateSuccess();
         } catch (error) {
             alert(`Update Error: ${error?.response?.data?.message || error.message}`);
         }
     }
 
-    const inputStyle = "w-full bg-[#161B26] border border-slate-700/60 rounded-xl py-3 px-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/80 focus:ring-1 focus:ring-red-500/30 transition-all font-mono text-sm shadow-inner";
-    const labelStyle = "text-xs font-sans font-bold uppercase tracking-wider text-slate-300 mb-2 block";
-    const sectionCard = "bg-[#1F2633] border border-slate-700/40 rounded-2xl p-8 shadow-xl mb-8 relative overflow-hidden";
+    const inputStyle = "w-full bg-slate-950/80 border border-slate-700/60 rounded-3xl py-3 px-4 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-400/80 focus:ring-1 focus:ring-cyan-400/20 transition-all font-sans text-sm shadow-[inset_0_2px_6px_rgba(255,255,255,0.03)]";
+    const labelStyle = "text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400 mb-2 block";
+    const sectionCard = "bg-slate-900/90 border border-slate-700/40 rounded-[32px] p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.7)] mb-10 relative overflow-hidden";
 
     return (
         <LazyMotion features={domAnimation}>
-            <div className="p-8 bg-[#0B0F19] min-h-screen text-slate-100 antialiased">
+            <div className="p-8 bg-slate-950 min-h-screen text-slate-100 antialiased">
                 <m.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="max-w-5xl mx-auto">
                     
-                    <div className="sticky top-0 z-40 bg-[#0B0F19]/90 backdrop-blur-md py-4 mb-8 border-b border-slate-800 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/30">
-                                <Terminal className="text-red-400 w-6 h-6" />
+                    <div className="sticky top-0 z-40 bg-slate-950/95 backdrop-blur-xl py-5 px-7 mb-8 border border-slate-800/70 rounded-[28px] shadow-2xl">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                            <div className="flex items-center gap-4">
+                                {/* <div className="p-3 bg-cyan-500/10 rounded-2xl border border-cyan-500/20">
+                                    <Terminal className="text-cyan-400 w-6 h-6" />
+                                </div> */}
+                                <div>
+                                    <h1 className="text-3xl font-extrabold text-white tracking-tight">Edit Problem</h1>
+                                    <p className="text-sm text-slate-400 font-medium">Verify current schemas and modify execution templates</p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-2xl font-extrabold text-white tracking-tight">Modify DSA Problem</h1>
-                                <p className="text-xs text-slate-400 font-medium">Verify current data and update only what is needed</p>
+                            <div className="flex gap-3">
+                                <button 
+                                    type="submit"
+                                    onClick={handleSubmit(onSubmit)} 
+                                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-500 to-sky-500 px-6 py-3 text-sm font-bold text-slate-950 shadow-[0_16px_30px_-15px_rgba(14,165,233,0.7)] transition-transform hover:-translate-y-0.5 active:scale-95"
+                                >
+                                    <Save size={16} /> Save Changes
+                                </button>
                             </div>
-                        </div>
-                        <div className="flex gap-3">
-                            <button 
-                                type="submit"
-                                onClick={handleSubmit(onSubmit)} 
-                                className="bg-red-600 hover:bg-red-500 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-red-900/20 transition-all active:scale-95 cursor-pointer"
-                            >
-                                <Save size={16} /> Save Changes
-                            </button>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="pb-20">
                         <div className={sectionCard}>
-                            <div className="absolute top-0 right-0 p-4 opacity-5 text-slate-400"><Database size={70} /></div>
-                            <h3 className="text-base font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-700/60 pb-3">
-                                <span className="text-red-400 font-mono">01.</span> Core Metadata
+                            <div className="absolute top-0 right-0 p-6 opacity-5 text-cyan-400"><Database size={80} /></div>
+                            <h3 className="text-base font-bold text-white mb-6 flex items-center gap-3 border-b border-slate-700/50 pb-4">
+                                <span className="text-cyan-400 font-mono">01</span>
+                                <span className="text-slate-300 uppercase tracking-[0.26em] text-[11px]">Core Metadata</span>
                             </h3>
-                            <div className="space-y-5">
+                            <div className="space-y-6">
                                 <div>
                                     <label className={labelStyle}>Problem Title</label>
                                     <input className={inputStyle} {...register("title")} placeholder="e.g., Search in Rotated Sorted Array" />
-                                    {errors.title && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.title.message}</p>}
+                                    {errors.title && <p className="text-xs text-amber-300 mt-1.5 font-medium">{errors.title.message}</p>}
                                 </div>
                                 <div>
                                     <label className={labelStyle}>Technical Description</label>
-                                    <textarea className={`${inputStyle} h-40 resize-none`} {...register("description")} placeholder="Provide descriptions, format specifications..." />
-                                    {errors.description && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.description.message}</p>}
+                                    <textarea className={`${inputStyle} h-44 resize-none`} {...register("description")} placeholder="Provide descriptions, format specifications..." />
+                                    {errors.description && <p className="text-xs text-amber-300 mt-1.5 font-medium">{errors.description.message}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
+                                    <div className="space-y-2">
                                         <label className={labelStyle}>Difficulty Classification</label>
                                         <select className={`${inputStyle} appearance-none cursor-pointer`} {...register("difficulty")}>
-                                            <option value="easy" className="bg-[#161B26]">Easy</option>
-                                            <option value="medium" className="bg-[#161B26]">Medium</option>
-                                            <option value="hard" className="bg-[#161B26]">Hard</option>
+                                            <option value="easy" className="bg-slate-950">Easy</option>
+                                            <option value="medium" className="bg-slate-950">Medium</option>
+                                            <option value="hard" className="bg-slate-950">Hard</option>
                                         </select>
                                     </div>
-                                    <div>
+                                    <div className="space-y-2">
                                         <label className={labelStyle}>Algorithmic Tag Category</label>
                                         <select className={`${inputStyle} appearance-none cursor-pointer`} {...register("tags")}>
-                                            <option value="array" className="bg-[#161B26]">Array</option>
-                                            <option value="string" className="bg-[#161B26]">String</option>
-                                            <option value="tree" className="bg-[#161B26]">Tree</option>
-                                            <option value="linkedList" className="bg-[#161B26]">Linked List</option>
-                                            <option value="graph" className="bg-[#161B26]">Graph</option>
-                                            <option value="dp" className="bg-[#161B26]">Dynamic Programming</option>
+                                            <option value="array" className="bg-slate-950">Array</option>
+                                            <option value="string" className="bg-slate-950">String</option>
+                                            <option value="tree" className="bg-slate-950">Tree</option>
+                                            <option value="linkedList" className="bg-slate-950">Linked List</option>
+                                            <option value="graph" className="bg-slate-950">Graph</option>
+                                            <option value="dp" className="bg-slate-950">Dynamic Programming</option>
                                         </select>
                                     </div>
                                 </div>
@@ -187,11 +193,11 @@ export default function UpdateProblem({ onUpdateSuccess }) {
                             
                             <div className="space-y-6">
                                 <div>
-                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Visible Assertions (User Facing)</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.26em] mb-4">Visible Assertions (User Facing)</p>
                                     <div className="space-y-4">
                                         {visibleFields.map((field, i) => (
-                                            <m.div layout key={field.id} className="p-5 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-4 relative">
-                                                <button type="button" onClick={() => removeVisible(i)} className="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors">
+                                            <div key={field.id} className="p-5 bg-slate-950/95 rounded-[28px] border border-slate-700/50 shadow-inner shadow-slate-950/20 space-y-4 relative">
+                                                <button type="button" onClick={() => removeVisible(i)} className="absolute top-4 right-4 text-slate-400 hover:text-rose-400 transition-colors">
                                                     <Trash2 size={15} />
                                                 </button>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,20 +214,20 @@ export default function UpdateProblem({ onUpdateSuccess }) {
                                                     <label className={labelStyle}>Explanation (Optional)</label>
                                                     <input className={inputStyle} {...register(`visibleTestCases.${i}.explanation`)} />
                                                 </div>
-                                            </m.div>
+                                            </div>
                                         ))}
-                                        <button type="button" onClick={() => appendVisible({ input: "", output: "", explanation: "" })} className="w-full py-2.5 border border-dashed border-slate-600/60 hover:border-red-500/60 bg-[#161B26]/40 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2 text-xs font-semibold uppercase cursor-pointer">
-                                            <Plus size={14} /> Append Public Case
+                                        <button type="button" onClick={() => appendVisible({ input: "", output: "", explanation: "" })} className="w-full rounded-3xl border border-dashed border-slate-700/50 bg-slate-950/80 py-3 text-sm font-semibold text-slate-200 hover:border-cyan-400/70 hover:text-white transition-all flex items-center justify-center gap-2 uppercase tracking-[0.16em]">
+                                            <Plus size={14} /> Add Public Case
                                         </button>
                                     </div>
                                 </div>
 
                                 <div className="pt-5 border-t border-slate-700/40">
-                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Hidden Validation Cases (System Verification)</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.26em] mb-4">Hidden Validation Cases (System Verification)</p>
                                     <div className="space-y-4">
                                         {hiddenFields.map((field, i) => (
-                                            <m.div layout key={field.id} className="p-5 bg-[#161B26] rounded-xl border border-slate-700/40 relative grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <button type="button" onClick={() => removeHidden(i)} className="absolute top-4 right-4 text-slate-400 hover:text-red-400 transition-colors">
+                                            <div key={field.id} className="p-5 bg-slate-950/95 rounded-[28px] border border-slate-700/50 relative grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <button type="button" onClick={() => removeHidden(i)} className="absolute top-4 right-4 text-slate-400 hover:text-rose-400 transition-colors">
                                                     <Trash2 size={15} />
                                                 </button>
                                                 <div>
@@ -232,10 +238,10 @@ export default function UpdateProblem({ onUpdateSuccess }) {
                                                     <label className={labelStyle}>System Output</label>
                                                     <input className={inputStyle} {...register(`hiddenTestCases.${i}.output`)} />
                                                 </div>
-                                            </m.div>
+                                            </div>
                                         ))}
-                                        <button type="button" onClick={() => appendHidden({ input: "", output: "" })} className="w-full py-2.5 border border-dashed border-slate-600/60 hover:border-red-500/60 bg-[#161B26]/40 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2 text-xs font-semibold uppercase cursor-pointer">
-                                            <Plus size={14} /> Append Hidden Case
+                                        <button type="button" onClick={() => appendHidden({ input: "", output: "" })} className="w-full rounded-3xl border border-dashed border-slate-700/50 bg-slate-950/80 py-3 text-sm font-semibold text-slate-200 hover:border-cyan-400/70 hover:text-white transition-all flex items-center justify-center gap-2 uppercase tracking-[0.16em]">
+                                            <Plus size={14} /> Add Hidden Case
                                         </button>
                                     </div>
                                 </div>
@@ -249,24 +255,24 @@ export default function UpdateProblem({ onUpdateSuccess }) {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                     <div className="space-y-4">
-                                        <p className="text-sm font-bold text-white flex items-center gap-2"><Code size={15} className="text-red-400" /> User Code Structure</p>
+                                        <p className="text-sm font-bold text-white flex items-center gap-2"><Code size={15} className="text-cyan-400" /> User Code Structure</p>
                                         {startFields.map((field, i) => (
-                                            <div key={field.id} className="p-4 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-3">
+                                            <div key={field.id} className="p-5 bg-slate-950/95 rounded-[26px] border border-slate-700/50 space-y-3">
                                                 <input className={inputStyle} placeholder="Language ID" {...register(`startCode.${i}.language`)} />
                                                 <textarea className={`${inputStyle} h-28 font-mono resize-none`} placeholder="Initial method definitions..." {...register(`startCode.${i}.initialCode`)} />
-                                                <button type="button" onClick={() => removeStart(i)} className="text-[10px] font-bold tracking-wider uppercase text-slate-400 hover:text-red-400 transition-colors cursor-pointer">Remove Setup</button>
+                                                <button type="button" onClick={() => removeStart(i)} className="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer">Remove Setup</button>
                                             </div>
                                         ))}
-                                        <button type="button" onClick={() => appendStart({ language: "javascript", initialCode: "" })} className="text-xs text-red-400 font-bold hover:underline hover:text-red-300 transition-colors cursor-pointer">+ Add Language Runtime</button>
+                                        <button type="button" onClick={() => appendStart({ language: "javascript", initialCode: "" })} className="text-xs text-cyan-400 font-bold hover:underline hover:text-cyan-300 transition-colors cursor-pointer">+ Add Language Runtime</button>
                                     </div>
 
                                     <div className="space-y-4">
                                         <p className="text-sm font-bold text-white flex items-center gap-2"><Eye size={15} className="text-emerald-400" /> Reference Solution</p>
                                         {refFields.map((field, i) => (
-                                            <div key={field.id} className="p-4 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-3">
+                                            <div key={field.id} className="p-5 bg-slate-950/95 rounded-[26px] border border-slate-700/50 space-y-3">
                                                 <input className={inputStyle} placeholder="Language" {...register(`referenceSolution.${i}.language`)} />
                                                 <textarea className={`${inputStyle} h-28 font-mono resize-none border-emerald-500/20 focus:border-emerald-500/60`} placeholder="Full working script..." {...register(`referenceSolution.${i}.completeCode`)} />
-                                                <button type="button" onClick={() => removeRef(i)} className="text-[10px] font-bold tracking-wider uppercase text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer">Remove Solution</button>
+                                                <button type="button" onClick={() => removeRef(i)} className="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer">Remove Solution</button>
                                             </div>
                                         ))}
                                         <button type="button" onClick={() => appendRef({ language: "javascript", completeCode: "" })} className="text-xs text-emerald-400 font-bold hover:underline hover:text-emerald-300 transition-colors cursor-pointer">+ Add Solution Script</button>
@@ -274,13 +280,13 @@ export default function UpdateProblem({ onUpdateSuccess }) {
                                 </div>
 
                                 <div className="pt-5 border-t border-slate-700/40 space-y-4">
-                                    <p className="text-sm font-bold text-white flex items-center gap-2"><Layers size={15} className="text-blue-400" /> Execution Template Setup (`driverCode`)</p>
+                                    <p className="text-sm font-bold text-white flex items-center gap-2"><Layers size={15} className="text-sky-400" /> Execution Template Setup (`driverCode`)</p>
                                     <div className="space-y-4">
                                         {driverFields.map((field, i) => (
-                                            <div key={field.id} className="p-5 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-4">
-                                                <div className="flex justify-between items-center">
-                                                    <input className={`${inputStyle} max-w-xs`} placeholder="Lang Reference" {...register(`driverCode.${i}.lang`)} />
-                                                    <button type="button" onClick={() => removeDriver(i)} className="text-slate-400 hover:text-red-400 transition-colors cursor-pointer"><Trash2 size={15} /></button>
+                                            <div key={field.id} className="p-5 bg-slate-950/95 rounded-[28px] border border-slate-700/50 space-y-4">
+                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                                    <input className={`${inputStyle} max-w-full sm:max-w-xs`} placeholder="Lang Reference" {...register(`driverCode.${i}.lang`)} />
+                                                    <button type="button" onClick={() => removeDriver(i)} className="inline-flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"><Trash2 size={15} /> Remove</button>
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
@@ -294,7 +300,7 @@ export default function UpdateProblem({ onUpdateSuccess }) {
                                                 </div>
                                             </div>
                                         ))}
-                                        <button type="button" onClick={() => appendDriver({ lang: "javascript", before: "", after: "" })} className="text-xs text-blue-400 font-bold hover:underline hover:text-blue-300 transition-colors cursor-pointer">+ Add Driver Core Interface</button>
+                                        <button type="button" onClick={() => appendDriver({ lang: "javascript", before: "", after: "" })} className="text-xs text-sky-400 font-bold hover:underline hover:text-sky-300 transition-colors cursor-pointer">+ Add Driver Core Interface</button>
                                     </div>
                                 </div>
                             </div>

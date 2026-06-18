@@ -1,7 +1,7 @@
+require('dotenv').config();
 const express = require('express')
 const app = express();
 const http = require("http");
-require('dotenv').config();
 const main =  require('./config/db')
 const cookieParser =  require('cookie-parser');
 const authRouter = require("./routes/userAuth");
@@ -14,6 +14,8 @@ const contestRouter = require("./routes/contest");
 const { Server } = require("socket.io");
 const { registerContestSocket } = require("./sockets/contestSocket");
 const interviewRoutes= require('./routes/interviewRoutes')
+
+const profileUploadRoute=  require("./routes/profile")
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -29,6 +31,7 @@ app.use(cors({
 }))
 
 app.use(express.json());
+
 app.use(cookieParser());
 app.use('/user',authRouter);
 app.use('/problem',problemRouter);
@@ -36,6 +39,7 @@ app.use('/submission',submitRouter);
 app.use('/ai',chatAiRouter)
 app.use('/contest',contestRouter)
 app.use('/interview',interviewRoutes)
+app.use('/profile',profileUploadRoute);
 
 registerContestSocket(io);
 const InitalizeConnection = async ()=>{

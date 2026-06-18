@@ -37,6 +37,10 @@ const userSchema = new Schema({
             ref:'problem'
         }]
     },
+    profilePic: {
+        type: String,
+        default: ''
+    },
     password:{
         type:String,
         required: true

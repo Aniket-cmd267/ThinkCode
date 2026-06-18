@@ -122,7 +122,7 @@ export default function AdminCreate() {
                         <div className={sectionCard}>
                             <div className="absolute top-0 right-0 p-4 opacity-5 text-slate-400"><Database size={70} /></div>
                             <h3 className="text-base font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-700/60 pb-3">
-                                <span className="text-red-400 font-mono">01.</span> Core Metadata
+                                <span className="text-red-400 font-mono">01.</span> Core Data
                             </h3>
                             <div className="space-y-5">
                                 <div>
@@ -131,13 +131,13 @@ export default function AdminCreate() {
                                     {errors.title && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.title.message}</p>}
                                 </div>
                                 <div>
-                                    <label className={labelStyle}>Technical Description</label>
+                                    <label className={labelStyle}>Description</label>
                                     <textarea className={`${inputStyle} h-40 resize-none`} {...register("description")} placeholder="Provide descriptions, format specifications, and runtime constraints..." />
                                     {errors.description && <p className="text-xs text-red-400 mt-1.5 font-medium">{errors.description.message}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={labelStyle}>Difficulty Classification</label>
+                                        <label className={labelStyle}>Difficulty</label>
                                         <select className={`${inputStyle} appearance-none cursor-pointer`} {...register("difficulty")}>
                                             <option value="easy" className="bg-[#161B26]">Easy</option>
                                             <option value="medium" className="bg-[#161B26]">Medium</option>
@@ -145,7 +145,7 @@ export default function AdminCreate() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className={labelStyle}>Algorithmic Tag Category</label>
+                                        <label className={labelStyle}>Topic Tags</label>
                                         <select className={`${inputStyle} appearance-none cursor-pointer`} {...register("tags")}>
                                             <option value="array" className="bg-[#161B26]">Array</option>
                                             <option value="string" className="bg-[#161B26]">String</option>
@@ -162,12 +162,12 @@ export default function AdminCreate() {
                         {/* SECTION 2: ASSERTION SUITES */}
                         <div className={sectionCard}>
                             <h3 className="text-base font-bold text-white mb-6 flex items-center gap-2 border-b border-slate-700/60 pb-3">
-                                <span className="text-red-400 font-mono">02.</span> Test Case Suites
+                                <span className="text-red-400 font-mono">02.</span>Test Case
                             </h3>
                             
                             <div className="space-y-6">
                                 <div>
-                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Visible Assertions (User Facing)</p>
+                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Visible Test Case</p>
                                     <div className="space-y-4">
                                         {visibleFields.map((field, i) => (
                                             <m.div layout key={field.id} className="p-5 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-4 relative">
@@ -191,14 +191,14 @@ export default function AdminCreate() {
                                             </m.div>
                                         ))}
                                         <button type="button" onClick={() => appendVisible({ input: "", output: "", explanation: "" })} className="w-full py-2.5 border border-dashed border-slate-600/60 hover:border-red-500/60 bg-[#161B26]/40 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2 text-xs font-semibold uppercase">
-                                            <Plus size={14} /> Append Public Case
+                                            <Plus size={14} /> Append TestCase
                                         </button>
                                         {errors.visibleTestCases && <p className="text-xs text-red-400 font-medium mt-1">{errors.visibleTestCases.message}</p>}
                                     </div>
                                 </div>
 
                                 <div className="pt-5 border-t border-slate-700/40">
-                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Hidden Validation Cases (System Verification)</p>
+                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Hidden TestCases</p>
                                     <div className="space-y-4">
                                         {hiddenFields.map((field, i) => (
                                             <m.div layout key={field.id} className="p-5 bg-[#161B26] rounded-xl border border-slate-700/40 relative grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -206,17 +206,17 @@ export default function AdminCreate() {
                                                     <Trash2 size={15} />
                                                 </button>
                                                 <div>
-                                                    <label className={labelStyle}>System Input</label>
+                                                    <label className={labelStyle}>Input</label>
                                                     <input className={inputStyle} {...register(`hiddenTestCases.${i}.input`)} />
                                                 </div>
                                                 <div>
-                                                    <label className={labelStyle}>System Output</label>
+                                                    <label className={labelStyle}>Output</label>
                                                     <input className={inputStyle} {...register(`hiddenTestCases.${i}.output`)} />
                                                 </div>
                                             </m.div>
                                         ))}
                                         <button type="button" onClick={() => appendHidden({ input: "", output: "" })} className="w-full py-2.5 border border-dashed border-slate-600/60 hover:border-red-500/60 bg-[#161B26]/40 rounded-xl text-slate-400 hover:text-white transition-all flex items-center justify-center gap-2 text-xs font-semibold uppercase">
-                                            <Plus size={14} /> Append Hidden Case
+                                            <Plus size={14} /> Append Hidden TestCase
                                         </button>
                                         {errors.hiddenTestCases && <p className="text-xs text-red-400 font-medium mt-1">{errors.hiddenTestCases.message}</p>}
                                     </div>
@@ -236,11 +236,11 @@ export default function AdminCreate() {
                                         {startFields.map((field, i) => (
                                             <div key={field.id} className="p-4 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-3">
                                                 <input className={inputStyle} placeholder="Language (e.g. javascript)" {...register(`startCode.${i}.language`)} />
-                                                <textarea className={`${inputStyle} h-28 font-mono resize-none`} placeholder="Initial method definitions..." {...register(`startCode.${i}.initialCode`)} />
+                                                <textarea className={`${inputStyle} h-28 font-mono resize-none`} placeholder="Initial code..." {...register(`startCode.${i}.initialCode`)} />
                                                 <button type="button" onClick={() => removeStart(i)} className="text-[10px] font-bold tracking-wider uppercase text-slate-400 hover:text-red-400 transition-colors">Remove Setup</button>
                                             </div>
                                         ))}
-                                        <button type="button" onClick={() => appendStart({ language: "javascript", initialCode: "" })} className="text-xs text-red-400 font-bold hover:underline hover:text-red-300 transition-colors">+ Add Language Runtime</button>
+                                        <button type="button" onClick={() => appendStart({ language: "javascript", initialCode: "" })} className="text-xs text-red-400 font-bold hover:underline hover:text-red-300 transition-colors">+ Add Language</button>
                                     </div>
 
                                     <div className="space-y-4">
@@ -248,11 +248,11 @@ export default function AdminCreate() {
                                         {refFields.map((field, i) => (
                                             <div key={field.id} className="p-4 bg-[#161B26] rounded-xl border border-slate-700/40 space-y-3">
                                                 <input className={inputStyle} placeholder="Language" {...register(`referenceSolution.${i}.language`)} />
-                                                <textarea className={`${inputStyle} h-28 font-mono resize-none border-emerald-500/20 focus:border-emerald-500/60`} placeholder="Full working script configuration..." {...register(`referenceSolution.${i}.completeCode`)} />
+                                                <textarea className={`${inputStyle} h-28 font-mono resize-none border-emerald-500/20 focus:border-emerald-500/60`} placeholder="Full solution..." {...register(`referenceSolution.${i}.completeCode`)} />
                                                 <button type="button" onClick={() => removeRef(i)} className="text-[10px] font-bold tracking-wider uppercase text-slate-400 hover:text-emerald-400 transition-colors">Remove Solution</button>
                                             </div>
                                         ))}
-                                        <button type="button" onClick={() => appendRef({ language: "javascript", completeCode: "" })} className="text-xs text-emerald-400 font-bold hover:underline hover:text-emerald-300 transition-colors">+ Add Solution Script</button>
+                                        <button type="button" onClick={() => appendRef({ language: "javascript", completeCode: "" })} className="text-xs text-emerald-400 font-bold hover:underline hover:text-emerald-300 transition-colors">+ Add Solution</button>
                                     </div>
                                 </div>
 
@@ -278,7 +278,7 @@ export default function AdminCreate() {
                                                 </div>
                                             </div>
                                         ))}
-                                        <button type="button" onClick={() => appendDriver({ lang: "javascript", before: "", after: "" })} className="text-xs text-blue-400 font-bold hover:underline hover:text-blue-300 transition-colors">+ Add Driver Core Interface</button>
+                                        <button type="button" onClick={() => appendDriver({ lang: "javascript", before: "", after: "" })} className="text-xs text-blue-400 font-bold hover:underline hover:text-blue-300 transition-colors">+ Add Driver Code</button>
                                         {errors.driverCode && <p className="text-xs text-red-400 font-medium mt-1">{errors.driverCode.message}</p>}
                                     </div>
                                 </div>

@@ -396,6 +396,7 @@ function Problem() {
         <div className="flex-1 min-h-0 overflow-hidden">
           {activeRightTab === "code" && (
             <div className="h-full w-full">
+              <Editor
                 height="100%"
                 language={getLanguageForMonaco(selectedLanguage)}
                 onChange={handleEditorChange}

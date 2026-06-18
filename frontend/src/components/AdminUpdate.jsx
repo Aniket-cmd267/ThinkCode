@@ -108,14 +108,9 @@ export default function AdminUpdate() {
           </m.div>
 
           {/* PROBLEM LIST */}
-          <m.div layout className="grid gap-3">
-            <AnimatePresence mode='popLayout'>
-              {filteredProblems.map((problem, index) => (
-                <m.div 
-                  layout
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0, transition: { delay: index * 0.05 } }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+          <div className="grid gap-3">
+              {filteredProblems.map((problem) => (
+                <div 
                   key={problem._id} 
                   className="group bg-[#121212] border border-white/5 hover:border-amber-500/30 rounded-2xl p-5 transition-all duration-300 shadow-lg flex items-center justify-between"
                 >
@@ -142,10 +137,12 @@ export default function AdminUpdate() {
                       Update
                     </m.button>
                   </NavLink>
-                </m.div>
+                {/* </m.div> */}
+                </div>
               ))}
-            </AnimatePresence>
-          </m.div>
+            </div>
+            {/* </AnimatePresence> */}
+          {/* </m.div> */}
 
           {filteredProblems.length === 0 && (
             <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl">

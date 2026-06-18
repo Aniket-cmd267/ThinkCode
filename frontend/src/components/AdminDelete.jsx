@@ -127,7 +127,7 @@ export default function AdminDelete() {
                                 <Trash2 className="w-10 h-10 text-rose-500" />
                             </div>
                             <div>
-                                <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Purge <span className="text-rose-500">Repository</span></h1>
+                                <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Delete <span className="text-rose-500">Repository</span></h1>
                             </div>
                         </div>
                     </m.div>
