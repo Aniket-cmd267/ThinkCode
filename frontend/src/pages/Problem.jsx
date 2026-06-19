@@ -38,9 +38,9 @@ function Problem() {
       dispatch(getCodeWrittenOnEditor({ selectedLanguage, value }));
     }, 1000)
   ).current;
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
     resolver: zodResolver(TestCaseSchema),
-    defaultValue: {
+    defaultValues: {
       visibleTestCases: [{ input: "", output: "" }]
     }
   })
@@ -50,6 +50,9 @@ function Problem() {
   });
   const [submissionHistory, setSubmissionHistory] = useState([]);
   const [resultHistory, setResultHistory] = useState({});
+  const [sessionMessage, setSessionMessage] = useState('');
+  const [sessionTestCases, setSessionTestCases] = useState([]);
+  const watchVisibleTestCases = watch('visibleTestCases');
   const [testCaseResults, setTestCaseResults] = useState(null);
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [activeRightTab, setActiveRightTab] = useState('code');
@@ -87,6 +90,26 @@ function Problem() {
 
     loadProblem();
   }, [dispatch, problemId])
+
+  useEffect(() => {
+    if (!problemData) return;
+    const initialCases = (problemData.visibleTestCases?.length ? problemData.visibleTestCases : [{ input: "", output: "" }]).map((tc) => ({
+      input: tc.input ?? "",
+      output: tc.output ?? ""
+    }));
+
+    reset({ visibleTestCases: initialCases });
+    setSessionTestCases(initialCases);
+  }, [problemData, reset]);
+
+  const getRunTestCases = () => {
+    const customCases = (watchVisibleTestCases || []).map((tc) => ({
+      input: String(tc.input || ""),
+      output: String(tc.output || "")
+    })).filter((tc) => tc.input.trim() || tc.output.trim());
+
+    return customCases.length ? customCases : (problemData?.visibleTestCases || []);
+  };
 
   async function fetchSubmissionHistory() {
     try {
@@ -165,23 +188,18 @@ function Problem() {
     }
   }
   // Run Code
-  async function runCode(code, lang, driverCode) {
+  async function runCode(code, lang, driverCode, customTestCases = []) {
     try {
       const driverBefore = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
       const driverAfter = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.after}\n`
       const fullCode = driverBefore + code + driverAfter
-      console.log(fullCode)
       const data = {
         fullCode,
-        lang
+        lang,
+        customTestCases: customTestCases.length ? customTestCases : undefined
       }
       const response = await axiosClient.post(`/submission/run/${problemId}`, data)
-      console.log("Run Code Response:", response?.data)
-
-      // Store the detailed test case results
       setTestCaseResults(response?.data)
-
-      // Switch to result tab
       setActiveRightTab('testrun')
     } catch (err) {
       console.log(err.message)
@@ -245,17 +263,13 @@ function Problem() {
       <div className="loading loading-spinner"></div>
     )
   }
-  async function onSubmit(data) { // this is for the testcases.
-    try {
-      console.log(data)
-      await axiosClient.put(`/problem/update/${problemId}`, {
-        problemData,
-        hiddenTestCases: data
-      })
-      alert('Problem updated successfully')
-    } catch (err) {
-      console.log(err.message)
-    }
+  async function onSubmit(data) {
+    const appliedCases = (data.visibleTestCases || []).map((testcase) => ({
+      input: testcase.input || "",
+      output: testcase.output || ""
+    })).filter((tc) => tc.input.trim() || tc.output.trim());
+    setSessionTestCases(appliedCases);
+    setSessionMessage(`Applied ${appliedCases.length} session-only testcase${appliedCases.length === 1 ? '' : 's'}. They will not be saved to the database.`);
   }
   return (
     <div className="h-screen w-screen bg-[#0D0D0D] text-slate-100 flex overflow-hidden fixed top-16 left-0 right-0 bottom-0">
@@ -377,7 +391,8 @@ function Problem() {
                 runCode(
                   code[selectedLanguage],
                   selectedLanguage,
-                  problemData?.driverCode
+                  problemData?.driverCode,
+                  getRunTestCases()
                 )
               }
               className="inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg border border-white/10 text-slate-300 bg-transparent hover:bg-white/5 hover:text-white transition-all"
@@ -393,6 +408,11 @@ function Problem() {
             </button>
           </div>
         </div>
+        {sessionMessage && (
+          <div className="px-4 py-3 border-b border-white/[0.06] bg-[#111111] text-xs text-slate-300">
+            <span className="font-medium text-slate-100">Session testcases active:</span> {sessionMessage}
+          </div>
+        )}
         <div className="flex-1 min-h-0 overflow-hidden">
           {activeRightTab === "code" && (
             <div className="h-full w-full">
@@ -619,7 +639,7 @@ function Problem() {
                   type="submit"
                   className="btn btn-sm bg-[#EF4444] text-white border-0 hover:bg-[#DC2626]"
                 >
-                  Save Hidden Tests
+                  Apply Session Cases
                 </button>
               </div>
             </form>

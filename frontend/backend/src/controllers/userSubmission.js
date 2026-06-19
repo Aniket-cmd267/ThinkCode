@@ -229,15 +229,20 @@ const runCode = async (req, res) => {
       return res.status(400).send("Some field missing");
     }
 
-    const problem = await Problem.findById(problemId);
+      const problem = await Problem.findById(problemId);
     if (!problem) {
       return res.status(404).send("Problem not found");
     }
 
     const languageId = getLanguageById(lang);
-    
-    // Map submissions against visible test cases for Run Code mode
-    const submissions = problem.visibleTestCases.map((testcase) => ({
+    const runTestCases = Array.isArray(req.body.customTestCases) && req.body.customTestCases.length
+      ? req.body.customTestCases.map((testcase) => ({
+          input: String(testcase.input || ""),
+          output: String(testcase.output || "")
+        })).filter((testcase) => testcase.input.trim() || testcase.output.trim())
+      : problem.visibleTestCases;
+
+    const submissions = (runTestCases || []).map((testcase) => ({
       source_code: Buffer.from(fullCode).toString('base64'),
       language_id: languageId,
       stdin: Buffer.from(testcase.input).toString('base64')
@@ -272,7 +277,9 @@ const runCode = async (req, res) => {
     let errorMessage = null;
     let firstFailedTestCase = null;
 
-    problem.visibleTestCases.forEach((testcase, index) => {
+    const evaluatedTestCases = runTestCases || [];
+
+    evaluatedTestCases.forEach((testcase, index) => {
       const test = testResult[index];
       if (!test) return;
 
@@ -308,7 +315,7 @@ const runCode = async (req, res) => {
     });
 
     // Format individual test case outcomes for the detailed frontend view
-    const formattedResults = problem.visibleTestCases.map((testcase, index) => {
+    const formattedResults = (runTestCases || []).map((testcase, index) => {
       const test = testResult[index] || {};
       const actualOut = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "";
       return {
@@ -326,7 +333,7 @@ const runCode = async (req, res) => {
     const runResponsePayload = {
       status, // 'accepted', 'wrong', 'compile_error', 'time_limit_exceeded', 'memory_limit_exceeded', 'runtime_error'
       testCasesPassed,
-      testCasesTotal: problem.visibleTestCases.length,
+      testCasesTotal: (runTestCases || []).length,
       runtime: runtime ? `${runtime.toFixed(0)} ms` : "-- ms",
       memory: memory ? `${memory.toFixed(2)} MB` : "-- MB",
       errorMessage,
