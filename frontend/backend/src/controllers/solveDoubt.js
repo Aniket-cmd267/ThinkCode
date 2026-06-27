@@ -124,12 +124,10 @@ const getChatHistory= async(req,res) =>{
             return res.status(404).send('Credentials invalid')
         }
         const history=await Chat.findOne({userId, problemId});
-        console.log('chat history exists')
         if(!history){
             return res.status(200).send('chatHistory not exist')
         }
         console.log(history)
-        console.log('Hello')
         return res.status(200).json({
             message: history.chatHistory
         })

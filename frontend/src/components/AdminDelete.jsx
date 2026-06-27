@@ -1,71 +1,3 @@
-// import { useEffect,useState } from "react"
-// import axiosClient from "../utils/axiosClient"
-// import { Link } from "react-router"
-
-// export default function AdminDelete(){
-//     const [allProblem, setAllProblem]= useState([])
-//     const [Disabled,setDisabled]= useState(false)
-//     useEffect(() =>{
-//         const getAllProblem= async () =>{
-//             try{
-//                 const data= await axiosClient.get('/problem/getAllProblem') // we prefer destructuring the data coz axios sends an object which contians more info than the data in object 
-//                             // we can see that through console.log 
-//                 // const {data}= await axiosClient.get('/problem/getAllProblem')
-//                 console.log(data)
-//                 setAllProblem(data?.data);
-//             }
-//             catch(err){
-//                 console.error('Error fetching problems:', err);
-//                 return err.message;
-//             }
-//         }
-//         getAllProblem();
-//     },[])
-
-//     const handleClick=async (problem) =>{
-//         const problemId= problem._id
-//         try{
-//             setDisabled(true)
-//             await axiosClient.delete(`/problem/delete/${problem._id}`)
-//             allProblem.filter((prev) => prev._id !== problemId)
-//             alert('Problem deleted successfully')
-//         }                                
-//         catch(err){
-//             console.log(err.message)            
-//         }                                                          
-//     }
-//     return (
-//         <div className="min-h-screen p-6 bg-neutral-950 transition-colors duration-300">
-//             <div>
-//                 <h1 className="text-center font-bold text-primary mb-8 drop-shadow-sm">Delete problem</h1>
-//                 <div className="flex flex-col gap-4 bg-neutral-700 rounded-xl">
-//                     {
-//                         allProblem?.map((problem) => (
-//                             <div key={problem._id} className="card bg-base-100 dark:bg-base-200/5 shadow-md p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-transform duration-200 hover:scale-[1.02] hover:shadow-2xl motion-safe:transform-gpu">
-//                                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-//                                     <h1 className="text-lg font-semibold text-base-content">{problem?.title}</h1>
-//                                     <div className="flex gap-2 mt-2 sm:mt-0">
-//                                         <h2 className="badge badge-primary">{problem?.difficulty}</h2>
-//                                         {Array.isArray(problem?.tags) ? (
-//                                             problem.tags.map((t,i) => (
-//                                                 <span key={i} className="badge badge-ghost">{t}</span>
-//                                             ))
-//                                         ) : (
-//                                             <span className="badge badge-ghost">{problem?.tags}</span>
-//                                         )}
-//                                     </div>
-//                                 </div>
-//                                 <button onClick={() => handleClick(problem)} disabled={Disabled} className={`btn btn-error rounded-full w-40 ${Disabled ? 'loading' : ''} transition-transform duration-150 active:scale-95`}>Delete</button>
-//                             </div>
-//                         ))
-//                     }
-//                 </div>
-//             </div>
-//         </div>
-//     )
-// }
-
-
 import { useEffect, useState } from "react"
 import axiosClient from "../utils/axiosClient"
 import { m, LazyMotion, domAnimation, AnimatePresence } from "framer-motion"
@@ -73,7 +5,7 @@ import { Trash2, AlertTriangle, ShieldAlert, Search } from "lucide-react"
 
 export default function AdminDelete() {
     const [allProblem, setAllProblem] = useState([])
-    const [deletingId, setDeletingId] = useState(null) // Better than a global disabled state
+    const [deletingId, setDeletingId] = useState(null)
     const [searchTerm, setSearchTerm] = useState("")
 
     useEffect(() => {
@@ -112,8 +44,6 @@ export default function AdminDelete() {
         <LazyMotion features={domAnimation}>
             <div className="min-h-screen p-8 bg-[#0A0A0B] text-slate-200">
                 <div className="max-w-5xl mx-auto">
-                    
-                    {/* DANGER HEADER */}
                     <m.div 
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -131,8 +61,6 @@ export default function AdminDelete() {
                             </div>
                         </div>
                     </m.div>
-
-                    {/* SEARCH/FILTER */}
                     <div className="relative mb-8 group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-rose-500 transition-colors" />
                         <input 
@@ -143,8 +71,6 @@ export default function AdminDelete() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-
-                    {/* PROBLEM LIST */}
                     <div className="space-y-4">
                         <AnimatePresence mode="popLayout">
                             {filteredProblems?.map((problem) => (

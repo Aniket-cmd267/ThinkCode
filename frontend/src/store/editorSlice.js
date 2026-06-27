@@ -49,8 +49,11 @@ const storeCode= createSlice({
     },
     reducers: {
         getCodeWrittenOnEditor: (state,action) =>{
-            const {selectedLanguage, value}= action.payload
-            state.updatedCode[selectedLanguage]= value
+            const { problemId, selectedLanguage, value}= action.payload
+            if (!state.updatedCode[problemId]) {
+                state.updatedCode[problemId] = {}
+            }
+            state.updatedCode[problemId][selectedLanguage]= value
         },
         addUserMsg: (state, action) =>{
             state.chatHistory.push(action.payload)
@@ -64,9 +67,15 @@ const storeCode= createSlice({
         .addCase(getProblem.fulfilled, (state,action) =>{
             const data= action.payload
             state.problemData= data
+            const problemId = data?._id || data?.id || 'unknown'
+            if (!state.updatedCode[problemId]) {
+                state.updatedCode[problemId] = {}
+            }
             data?.startCode?.forEach((code) =>{
-                if(!state.updatedCode[code?.language])
-                    state.updatedCode[code?.language]= code?.initialCode
+                const language = code?.language
+                if (language && state.updatedCode[problemId][language] === undefined) {
+                    state.updatedCode[problemId][language]= code?.initialCode
+                }
             })
             state.error= null
         })

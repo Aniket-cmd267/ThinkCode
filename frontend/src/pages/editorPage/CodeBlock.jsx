@@ -1,61 +1,29 @@
-import { useMemo, useState } from "react";
-import { Check, Copy, Circle } from "lucide-react";
+import { useMemo } from "react";
 function normalizeNewlines(s = "") {
-  // Handles both real newlines and "\n" sequences coming from APIs/db.
   return String(s).replace(/\\n/g, "\n");
 }
 
 export function CodeBlock({ code, label, className = "" }) {
-  const [copied, setCopied] = useState(false);
   const normalized = useMemo(() => normalizeNewlines(code), [code]);
-
-  async function onCopy() {
-    try {
-      await navigator.clipboard.writeText(normalized ?? "");
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1200);
-    } catch {
-      // ignore (clipboard may be blocked); no UX break
-    }
-  }
 
   return (
     <div
       className={[
-        "rounded-2xl border border-white/[0.06] bg-[#1A1A1A] overflow-hidden",
+        "rounded-2xl border border-white/[0.06] bg-[#1A1A1A]",
         className
       ].join(" ")}
     >
-      <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#161616]/70 border-b border-white/[0.06]">
-        <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-[0.22em] text-[#F87171]/90 font-semibold truncate">
-            {label || "Code"}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onCopy}
-          className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/20 transition-all"
-        >
-          {copied ? <Check size={16} /> : <Copy size={16} />}
-          {copied ? "Copied" : "Copy"}
-        </button>
+      <div className="max-h-[52vh] overflow-y-auto bg-[#1A1A1A] w-full">
+        <pre className="p-4 pb-6 text-[12px] md:text-[13px] leading-relaxed overflow-x-auto text-slate-100 whitespace-pre-wrap break-words bg-[#1A1A1A] font-mono">
+          <code className="font-mono block w-full bg-[#1A1A1A]">{normalized}</code>
+        </pre>
       </div>
-
-      <pre className="p-4 text-[12px] md:text-[13px] leading-relaxed overflow-x-auto text-slate-100">
-        <code className="font-mono whitespace-pre">{normalized}</code>
-      </pre>
     </div>
   );
 }
 
 
-
-/**
- * A helper component to render "Rich Text" lines (handling bolding and bullets)
- */
 function RichTextLine({ content }) {
-  // 1. Handle Bold Text: **text** -> <strong>text</strong>
   const parts = content.split(/(\*\*.*?\*\*)/g);
 
   return (
@@ -92,7 +60,6 @@ export function FencedText({ text, defaultCodeLabel = "Code" }) {
   }, [text]);
 
   const renderTextContent = (val) => {
-    // Split the text block into individual lines
     const lines = val.split('\n');
     const elements = [];
     let currentBulletList = [];
@@ -117,10 +84,7 @@ export function FencedText({ text, defaultCodeLabel = "Code" }) {
 
     lines.forEach((line, idx) => {
       const trimmedLine = line.trim();
-
-      // Detect Bullet points (- item, * item, • item)
       const bulletMatch = trimmedLine.match(/^[-*•]\s+(.*)/);
-      // Detect Numbered points (1. item)
       const numberMatch = trimmedLine.match(/^(\d+\.)\s+(.*)/);
 
       if (bulletMatch) {
@@ -134,11 +98,9 @@ export function FencedText({ text, defaultCodeLabel = "Code" }) {
           </div>
         );
       } else if (trimmedLine === "") {
-        // Empty line acts as a paragraph break
         flushBullets(idx);
         elements.push(<div key={idx} className="h-2" />);
       } else {
-        // Regular paragraph text
         flushBullets(idx);
         elements.push(
           <p key={idx} className="text-slate-200/90 leading-relaxed my-1">
@@ -157,8 +119,6 @@ export function FencedText({ text, defaultCodeLabel = "Code" }) {
       {chunks.map((c, i) => {
         if (c.type === "code") {
           const label = c.lang ? `${c.lang.toUpperCase()} ${defaultCodeLabel}` : defaultCodeLabel;
-          // Note: Assuming CodeBlock is defined elsewhere in your project
-          // return <CodeBlock key={`code-${i}`} code={c.value} label={label} />;
           return (
             <div key={`code-${i}`} className="rounded-xl border border-white/[0.06] bg-[#1A1A1A]/50 overflow-hidden">
               <div className="bg-[#161616] px-4 py-2 border-b border-white/[0.06] flex justify-between items-center">

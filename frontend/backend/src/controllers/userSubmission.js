@@ -46,7 +46,7 @@ const submitCode = async (req, res) => {
     const problemId = req.params.id;
     const { code, fullCode, lang } = req.body;
 
-    // #region agent log
+
     fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '96279e' },
@@ -56,7 +56,7 @@ const submitCode = async (req, res) => {
         timestamp: Date.now()
       })
     }).catch(() => {});
-    // #endregion
+
 
     if (!userId || !fullCode || !problemId || !lang || !code)
       return res.status(400).send("Some field missing");
@@ -72,7 +72,7 @@ const submitCode = async (req, res) => {
       testCasesTotal: problem.hiddenTestCases.length
     });
 
-    // #region agent log
+
     fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '96279e' },
@@ -82,7 +82,7 @@ const submitCode = async (req, res) => {
         timestamp: Date.now()
       })
     }).catch(() => {});
-    // #endregion
+
 
     const languageId = getLanguageById(lang);
     const submissions = problem.hiddenTestCases.map((testcase) => ({
@@ -94,7 +94,6 @@ const submitCode = async (req, res) => {
     const submitResult = await submitBatch(submissions);
     const resultToken = submitResult.map((value) => value.token);
 
-    // ASYNCHRONOUS RETRY POLLING MECHANISM FOR USER SUBMISSION
     let testResult = [];
     let maxRetries = 10;
     let isProcessing = true;
@@ -121,10 +120,9 @@ const submitCode = async (req, res) => {
     let status = 'accepted';
     let errorMessage = null;
     
-    // Track parameters for the single failing test case explicitly
+    
     let firstFailedTestCase = null;
 
-    // SINGLE RECONCILED EVALUATION LOOP
     problem.hiddenTestCases.forEach((testcase, index) => {
       const test = testResult[index];
       if (!test) return;
@@ -160,7 +158,6 @@ const submitCode = async (req, res) => {
       }
     });
 
-    // #region agent log
     fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '96279e' },
@@ -170,7 +167,6 @@ const submitCode = async (req, res) => {
         timestamp: Date.now()
       })
     }).catch(() => {});
-    // #endregion
 
     submittedResult.status = status;
     submittedResult.testCasesPassed = testCasesPassed;
@@ -179,13 +175,11 @@ const submitCode = async (req, res) => {
     submittedResult.memory = memory;
     await submittedResult.save();
 
-    // Convert mongoose document into standard JSON payload to extend frontend data safely
     let responsePayload = submittedResult.toObject();
     if (status === 'wrong' && firstFailedTestCase) {
       responsePayload.failedTestCaseDetails = firstFailedTestCase;
     }
 
-    // Format runtime/memory for frontend display
     responsePayload.runtime = runtime ? `${runtime.toFixed(0)} ms` : "-- ms";
     responsePayload.memory = memory ? `${memory.toFixed(2)} MB` : "-- MB";
 
@@ -203,7 +197,7 @@ const submitCode = async (req, res) => {
     return res.status(200).send(responsePayload);
 
   } catch (err) {
-    // #region agent log
+
     fetch('http://127.0.0.1:7851/ingest/0cb560c5-e95f-4dac-b8be-e7f2d1ac4c4f', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '96279e' },
@@ -213,7 +207,7 @@ const submitCode = async (req, res) => {
         timestamp: Date.now()
       })
     }).catch(() => {});
-    // #endregion
+
 
     console.log(err);
     return res.status(500).send("Internal Server Error " + err.message);
@@ -314,7 +308,6 @@ const runCode = async (req, res) => {
       }
     });
 
-    // Format individual test case outcomes for the detailed frontend view
     const formattedResults = (runTestCases || []).map((testcase, index) => {
       const test = testResult[index] || {};
       const actualOut = test.stdout ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() : "";
@@ -329,16 +322,15 @@ const runCode = async (req, res) => {
       };
     });
 
-    // Build response body matching Run and Submit configurations cleanly
     const runResponsePayload = {
-      status, // 'accepted', 'wrong', 'compile_error', 'time_limit_exceeded', 'memory_limit_exceeded', 'runtime_error'
+      status,
       testCasesPassed,
       testCasesTotal: (runTestCases || []).length,
       runtime: runtime ? `${runtime.toFixed(0)} ms` : "-- ms",
       memory: memory ? `${memory.toFixed(2)} MB` : "-- MB",
       errorMessage,
-      results: formattedResults, // The array needed for Run
-      failedTestCaseDetails: firstFailedTestCase // Details used for the failure fallback terminal
+      results: formattedResults, 
+      failedTestCaseDetails: firstFailedTestCase 
     };
 
     return res.status(200).send(runResponsePayload);

@@ -7,14 +7,11 @@ const jwt = require('jsonwebtoken');
 const register = async (req, res) => {
 
     try {
-        // validate the data;
         validate(req.body);
         const { firstName, emailId, password } = req.body;
 
         req.body.password = await bcrypt.hash(password, 10);
         req.body.role = 'user'
-        // console.log(req.body)
-        // console.log(emailId)
         const user = await User.create(req.body);
         console.log(user)
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: 'user' }, process.env.JWT_KEY, { expiresIn: 60 * 60 });
@@ -43,17 +40,13 @@ const login = async (req, res) => {
 
     try {
         const { emailId, password } = req.body;
-        // console.log(emailId, password);
         if (!emailId)
             throw new Error("Invalid Credentials");
         if (!password)
             throw new Error("Invalid Credentials");
 
         const user = await User.findOne({emailId});   
-        // console.log(user)   
         const match = await bcrypt.compare(password, user.password);
-        // console.log(password);
-        // console.log(user.password);
         if (!match)
             throw new Error("Invalid Credentials");
 
@@ -75,7 +68,7 @@ const login = async (req, res) => {
         res.status(401).send("Error: " + err);
     }
 }
-// logOut feature
+
 
 const logout = async (req, res) => {
 
@@ -100,15 +93,11 @@ const logout = async (req, res) => {
 
 const adminRegister = async (req, res) => {
     try {
-        // validate the data;
-        //   if(req.result.role!='admin')
-        //     throw new Error("Invalid Credentials");  
+
         validate(req.body);
         const { firstName, emailId, password } = req.body;
 
         req.body.password = await bcrypt.hash(password, 10);
-        //
-
         const user = await User.create(req.body);
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 60 * 60 });
         res.cookie('token', token, { maxAge: 60 * 60 * 1000 });

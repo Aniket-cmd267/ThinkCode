@@ -10,6 +10,7 @@ import Problem from "./pages/Problem";
 import AdminCreate from "./components/AdminCreate";
 import AdminDelete from "./components/AdminDelete";
 import AdminUpdate from "./components/AdminUpdate";
+import AdminVideoUpload from "./components/AdminVideoUpload";
 import UpdateProblem from "./components/UpdateProblem";
 import RouteNotExist from "./pages/RouteNotExist";
 import Profile from "./components/Profile";
@@ -50,6 +51,8 @@ function App() {
           element={(isAuthenticated) && user?.role === 'admin' ? <UpdateProblem/> : <Navigate to='/problem' />}></Route>
         <Route path="/admin/delete"
           element={(isAuthenticated && user?.role === 'admin') ? <AdminDelete /> : <Navigate to='/problem' />}></Route>
+        <Route path="/admin/video"
+          element={(isAuthenticated && user?.role === 'admin') ? <AdminVideoUpload /> : <Navigate to='/problem' />}></Route>
 
         <Route path="/contest" element={isAuthenticated ? <Contest /> : <Navigate to='/login' />}></Route>
         <Route path="/contest/:roomId" element={isAuthenticated ? <ContestRoom /> : <Navigate to='/login' />}></Route>

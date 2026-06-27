@@ -22,15 +22,12 @@ const createProblem = async (req, res) => {
         if (lang.toLowerCase() !== language.toLowerCase()) {
           continue;
         }
-
-        // Increment expected match count for each language runtime matched
         expectedTotalMatches += visibleTestCases.length;
 
         const solution = before + completeCode + after;
-        // console.log(solution)
+
         const languageId = getLanguageById(language);
 
-        // Create Batch submission with Base64 encoding
         const submissions = visibleTestCases.map((testcase) => ({
           source_code: Buffer.from(solution).toString('base64'),
           language_id: languageId,
@@ -39,22 +36,18 @@ const createProblem = async (req, res) => {
 
         const submitResult = await submitBatch(submissions);
         const resultTokens = submitResult.map((value) => value.token);
-
-        // --- FIXED: ASYNCHRONOUS POLLING ENGINE FOR JUDGE0 ---
         let testResult = [];
         let maxRetries = 10;
         let isProcessing = true;
 
         while (maxRetries > 0 && isProcessing) {
           testResult = await submitToken(resultTokens);
-          
-          // Check if any submission in the batch is still in Queue (1) or Processing (2)
           const stillProcessing = testResult.some(test => test.status && test.status.id <= 2);
           
           if (!stillProcessing) {
             isProcessing = false;
           } else {
-            await delay(1500); // Wait 1.5 seconds before polling Judge0 again
+            await delay(1500); 
             maxRetries--;
           }
         }
@@ -62,14 +55,12 @@ const createProblem = async (req, res) => {
         if (isProcessing) {
           throw new Error(`Judge0 processing timed out for language runtime: ${language}`);
         }
-        // ----------------------------------------------------
 
-        // Validate assertions against reassembled response outputs
         visibleTestCases.forEach((testcase, index) => {
           const test = testResult[index];
           if (!test) return;
 
-          if (test.status.id === 6) { // Compilation Error Handlers
+          if (test.status.id === 6) {
             const errorMessage = test.compile_output || '';
             console.error(`--- COMPILER ERROR ON DEPLOYMENT [${language}] ---`);
             console.error(Buffer.from(errorMessage, 'base64').toString('utf8'));
@@ -79,8 +70,6 @@ const createProblem = async (req, res) => {
           const output = test.stdout 
             ? Buffer.from(test.stdout, 'base64').toString('utf8').trim() 
             : "No Output";
-
-          // Match clean trimmed strings ignoring tailing whitespaces/newlines
           if (testcase.output.trim() === output) {
             totalSuccessfulMatches++;
           } else {
@@ -93,15 +82,13 @@ const createProblem = async (req, res) => {
       }
     }
 
-    // --- FIXED: DYNAMIC LANGUAGE ASSIGNMENT VALIDATION RULE ---
+
     if (totalSuccessfulMatches !== expectedTotalMatches) {
       throw new Error(`Test case validation mismatch. Passed ${totalSuccessfulMatches} out of ${expectedTotalMatches} required assertions.`);
     }
-
-    // Deploys clean problem payload referencing current authentication session
     const userProblem = await Problem.create({
       ...req.body,
-      problemCreator: req.result._id // Derived securely via middleware session decoding
+      problemCreator: req.result._id 
     });
 
     res.status(201).send("Problem Saved Successfully");
@@ -141,8 +128,6 @@ const updateProblem = async (req, res) => {
     if (!Array.isArray(driverCode) || driverCode.length === 0) {
       return res.status(400).send("Driver code is required");
     }
-
-    // Validate reference solutions by testing with driver code
     for (const { lang, before, after } of driverCode) {
       for (const { language, completeCode } of referenceSolution) {
         if (lang.toLowerCase() !== language.toLowerCase()) {
@@ -153,11 +138,7 @@ const updateProblem = async (req, res) => {
         if (!languageId) {
           return res.status(400).send(`Unsupported language: ${language}`);
         }
-
-        // Concatenate driver code with reference solution
         const solution = before + completeCode + after;
-
-        // Create batch submission with Base64 encoding
         const submissions = visibleTestCases.map((testcase) => ({
           source_code: Buffer.from(solution).toString('base64'),
           language_id: languageId,
@@ -246,8 +227,6 @@ const getProblemById = async (req, res) => {
   try {
     if (!id)
       return res.status(400).send("ID is Missing");
-
-    console.log('Hello')
     const getProblem = await Problem.findById(id).select('_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution driverCode');
     if (!getProblem)
       return res.status(404).send("Problem is Missing");

@@ -69,7 +69,7 @@ function AdminPanel() {
                                 </div>
                                 <div>
                                     <h1 className="text-4xl font-black text-white tracking-tighter">
-                                        SYSTEM <span className="text-[#EF4444]">ADMIN</span>
+                                        ADMIN <span className="text-[#EF4444]">SECTION</span>
                                     </h1>
 
                                 </div>

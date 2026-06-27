@@ -41,8 +41,6 @@ export default function AdminUpdate() {
     <LazyMotion features={domAnimation}>
       <div className='min-h-screen p-8 bg-[#0A0A0B] text-slate-200 selection:bg-amber-500/30'>
         <div className="max-w-5xl mx-auto">
-          
-          {/* HEADER */}
           <m.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -58,13 +56,12 @@ export default function AdminUpdate() {
             </div>
           </m.div>
 
-          {/* GLASSMORPHISM FILTER BAR */}
           <m.div 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-[#141415]/60 backdrop-blur-md border border-white/5 p-4 rounded-2xl mb-8 flex flex-wrap gap-4 items-center shadow-2xl"
           >
-            <div className="relative flex-grow min-w-[250px]">
+            <div className="relative grow min-w-62.5">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
               <input 
                 type="text" 
@@ -107,7 +104,7 @@ export default function AdminUpdate() {
             </div>
           </m.div>
 
-          {/* PROBLEM LIST */}
+
           <div className="grid gap-3">
               {filteredProblems.map((problem) => (
                 <div 
@@ -137,12 +134,10 @@ export default function AdminUpdate() {
                       Update
                     </m.button>
                   </NavLink>
-                {/* </m.div> */}
                 </div>
               ))}
             </div>
-            {/* </AnimatePresence> */}
-          {/* </m.div> */}
+       
 
           {filteredProblems.length === 0 && (
             <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-3xl">

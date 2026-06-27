@@ -44,18 +44,26 @@ app.use('/profile',profileUploadRoute);
 // app.use('/video', videoRoutes);
 
 registerContestSocket(io);
-const InitalizeConnection = async ()=>{
-    try{
-        await Promise.all([main(),redisClient.connect()]);
-        console.log("DB Connected");    
-        
-        server.listen(process.env.PORT, ()=>{
-            console.log("Server listening at port number: "+ process.env.PORT);
-        })
-    }
-    catch(err){
-        console.log("Error: "+err);
+const InitalizeConnection = async () => {
+    const PORT = process.env.PORT || 5000;
+    try {
+        console.log("⏳ Attempting MongoDB connection...");
+        await main();
+        console.log("🟢 MongoDB Connected Successfully");
+    } catch (mongoErr) {
+        console.error("🔴 MONGODB CRASHED THE BOOT:", mongoErr);
         process.exit(1);
     }
+    try {
+        console.log("⏳ Attempting Redis connection...");
+        await redisClient.connect();
+        console.log("🟢 Redis Connected Successfully");
+    } catch (redisErr) {
+        console.error("🔴 REDIS CRASHED THE BOOT:", redisErr);
+        process.exit(1);
+    }
+    server.listen(PORT, () => {
+        console.log(`🚀 Server live and listening on port: ${PORT}`);
+    });
 }
 InitalizeConnection();

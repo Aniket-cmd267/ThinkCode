@@ -36,7 +36,6 @@ export default function ProfileNavigation() {
     <>
       <nav className="sticky top-0 z-50 w-full bg-[#261212]/80 backdrop-blur-md border-b border-[#F87171]/20 shadow-[0_18px_55px_rgba(0,0,0,0.85)]">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-2.5 flex items-center justify-between gap-4">
-          {/* LEFT: BRAND */}
           <div className="flex items-center gap-2">
             <NavLink to="/" className="flex items-center gap-2 group">
               <div className="bg-[#EF4444] p-2 rounded-xl shadow-[0_0_25px_rgba(248,113,113,0.7)] transform transition-transform group-hover:scale-110">
@@ -47,8 +46,6 @@ export default function ProfileNavigation() {
               </span>
             </NavLink>
           </div>
-
-          {/* CENTER: MAIN NAV LINKS */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
             {[
               { to: "/problem", label: "Problems", icon: LayoutGrid },
@@ -73,31 +70,7 @@ export default function ProfileNavigation() {
             ))}
           </div>
 
-          {/* RIGHT: TOOLS + AUTH / PROFILE */}
           <div className="flex items-center gap-3">
-            {/* ICON TOOLS */}
-            <div className="hidden sm:flex items-center gap-2">
-              <button
-                type="button"
-                className="h-9 w-9 rounded-full border border-[#F87171]/25 bg-[#120505]/70 flex items-center justify-center text-[#F87171]/80 hover:text-[#EF4444] hover:border-[#EF4444]/60 hover:bg-[#1A0A0A] transition-all shadow-[0_0_12px_rgba(248,113,113,0.35)]"
-              >
-                <Search size={16} />
-              </button>
-              <button
-                type="button"
-                className="h-9 w-9 rounded-full border border-[#F87171]/25 bg-[#120505]/70 flex items-center justify-center text-[#F87171]/80 hover:text-[#EF4444] hover:border-[#EF4444]/60 hover:bg-[#1A0A0A] transition-all shadow-[0_0_12px_rgba(248,113,113,0.35)]"
-              >
-                <Bell size={16} />
-              </button>
-              <button
-                type="button"
-                className="h-9 w-9 rounded-full border border-[#F87171]/25 bg-[#120505]/70 flex items-center justify-center text-[#F87171]/80 hover:text-[#EF4444] hover:border-[#EF4444]/60 hover:bg-[#1A0A0A] transition-all shadow-[0_0_16px_rgba(248,113,113,0.45)]"
-              >
-                <MoonStar size={16} />
-              </button>
-            </div>
-
-            {/* AUTH / PROFILE AREA */}
             {!isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <Link

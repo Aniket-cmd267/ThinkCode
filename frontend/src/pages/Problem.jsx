@@ -34,8 +34,8 @@ function Problem() {
   const navigate = useNavigate();
   const dispatch = useDispatch()
   const debouncedSave = useRef(
-    debounce(({ selectedLanguage, value }) => {
-      dispatch(getCodeWrittenOnEditor({ selectedLanguage, value }));
+    debounce(({ problemId, selectedLanguage, value }) => {
+      dispatch(getCodeWrittenOnEditor({ problemId, selectedLanguage, value }));
     }, 1000)
   ).current;
   const { register, control, handleSubmit, reset, watch, formState: { errors } } = useForm({
@@ -56,19 +56,15 @@ function Problem() {
   const [testCaseResults, setTestCaseResults] = useState(null);
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [activeRightTab, setActiveRightTab] = useState('code');
-  // const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const { isAuthenticated } = useSelector(state => state.slice1)
-  const [code, setCode] = useState({
-    'c++': '',
-    'java': '',
-    'javascript': ''
-  });
   let { problemId } = useParams();
   const { updatedCode, problemData } = useSelector(state => state.slice2)
+  const currentProblemCode = updatedCode?.[problemId] || {};
+  const [editorValue, setEditorValue] = useState('');
   const editorRef = useRef(null);
-  // console.log(problemId)
+
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -100,7 +96,26 @@ function Problem() {
 
     reset({ visibleTestCases: initialCases });
     setSessionTestCases(initialCases);
-  }, [problemData, reset]);
+
+    const availableLanguages = (problemData.startCode || []).map((item) => String(item.language || "").toLowerCase());
+    if (availableLanguages.length && !availableLanguages.includes(selectedLanguage)) {
+      setSelectedLanguage(availableLanguages[0]);
+    }
+  }, [problemData, reset, selectedLanguage]);
+
+  useEffect(() => {
+    const savedCode = currentProblemCode?.[selectedLanguage];
+    if (savedCode !== undefined) {
+      setEditorValue(savedCode);
+      return;
+    }
+
+    const template = problemData?.startCode?.find((item) =>
+      String(item.language || "").toLowerCase() === selectedLanguage.toLowerCase()
+    )?.initialCode;
+
+    setEditorValue(template || '');
+  }, [currentProblemCode, selectedLanguage, problemData]);
 
   const getRunTestCases = () => {
     const customCases = (watchVisibleTestCases || []).map((tc) => ({
@@ -124,21 +139,21 @@ function Problem() {
       setSubmissionHistory([])
     }
   }
-  function formatRuntime(runtime) {
-    const value = Number(runtime)
-    if (!Number.isFinite(value) || value < 0) return '--'
-    if (value === 0) return '0 ms'
+  // function formatRuntime(runtime) {
+  //   const value = Number(runtime)
+  //   if (!Number.isFinite(value) || value < 0) return '--'
+  //   if (value === 0) return '0 ms'
 
-    const milliseconds = value < 10 ? value * 1000 : value
-    if (milliseconds < 1000) return `${milliseconds.toFixed(0)} ms`
-    return `${(milliseconds / 1000).toFixed(2)} s`
-  }
-  function formatMemory(memory) {
-    const value = Number(memory)
-    if (!Number.isFinite(value) || value < 0) return '--'
-    if (value >= 1024) return `${(value / 1024).toFixed(2)} MB`
-    return `${value.toFixed(0)} KB`
-  }
+  //   const milliseconds = value < 10 ? value * 1000 : value
+  //   if (milliseconds < 1000) return `${milliseconds.toFixed(0)} ms`
+  //   return `${(milliseconds / 1000).toFixed(2)} s`
+  // }
+  // function formatMemory(memory) {
+  //   const value = Number(memory)
+  //   if (!Number.isFinite(value) || value < 0) return '--'
+  //   if (value >= 1024) return `${(value / 1024).toFixed(2)} MB`
+  //   return `${value.toFixed(0)} KB`
+  // }
   function getLanguageForMonaco(lang) {
     switch (lang) {
       case 'javascript': return 'Javascript'
@@ -147,20 +162,34 @@ function Problem() {
       default: return ''
     }
   }
-  function handleEditorChange(value) {
-    // console.log(value)
-    // console.log(selectedLanguage)
-    setCode((prevState) => ({
-      ...prevState,
-      [selectedLanguage]: value
-    }))
-    debouncedSave({ selectedLanguage, value })
-    // console.log(code)
+  function getEditorValue(language) {
+    const existing = currentProblemCode?.[language];
+    if (existing !== undefined) {
+      return existing;
+    }
+    return problemData?.startCode?.find((item) =>
+      String(item.language || "").toLowerCase() === language.toLowerCase()
+    )?.initialCode || '';
   }
-  function handleEditorDidMount(editor, monaco) { // we are giving the instance of monaco editor 
-    editorRef.current = editor
 
-    // Custom dark theme with soft-red comments for eye-strain reduction
+  function persistEditorValue(language, value) {
+    if (!problemId || value === undefined) return;
+    dispatch(getCodeWrittenOnEditor({ problemId, selectedLanguage: language, value }));
+  }
+
+  function handleEditorChange(value) {
+    const normalizedValue = value ?? '';
+    setEditorValue(normalizedValue);
+    debouncedSave({ problemId, selectedLanguage, value: normalizedValue })
+  }
+
+  function handleLanguageChange(language) {
+    if (language === selectedLanguage) return;
+    persistEditorValue(selectedLanguage, editorValue);
+    setSelectedLanguage(language);
+  }
+  function handleEditorDidMount(editor, monaco) { 
+    editorRef.current = editor
     monaco.editor.defineTheme('thinkcode-dark', {
       base: 'vs-dark',
       inherit: true,
@@ -178,7 +207,6 @@ function Problem() {
     });
     monaco.editor.setTheme('thinkcode-dark');
   }
-  // Console
   const showTestCases = (testcase) => {
     if (testcase === 'testcase') {
       setActiveRightTab('code')
@@ -187,7 +215,6 @@ function Problem() {
       setActiveRightTab('testcase')
     }
   }
-  // Run Code
   async function runCode(code, lang, driverCode, customTestCases = []) {
     try {
       const driverBefore = `${driverCode?.find((obj) => obj.lang.toLowerCase() == lang.toLowerCase())?.before}\n`
@@ -203,7 +230,6 @@ function Problem() {
       setActiveRightTab('testrun')
     } catch (err) {
       console.log(err.message)
-      // Show error in testrun tab
       setTestCaseResults({
         status: 'error',
         errorMessage: err.message || 'Failed to run code',
@@ -214,7 +240,6 @@ function Problem() {
       setActiveRightTab('testrun')
     }
   }
-  // Submission 
 
   async function submitCode(code, lang) {
     try {
@@ -227,15 +252,12 @@ function Problem() {
         fullCode,
         lang
       }
-      
-      // Reset the panel state to a clean loading state instantly 
+
       setResultHistory({ status: 'pending' })
       setActiveRightTab('result')
 
       const response = await axiosClient.post(`/submission/submit/${problemId}`, data)
       console.log("Submit Code Response Data Payload:", response?.data)
-
-      // Commit full metric objects cleanly into state hooks
       setResultHistory(response?.data)
       setSubmissionHistory((prev) => [response?.data, ...prev])
       
@@ -245,7 +267,6 @@ function Problem() {
 
     } catch (err) {
       console.error("Submission Trigger Network Fault:", err)
-      // Display client-side or server crash errors in the results view
       setResultHistory({
         status: 'error',
         errorMessage: err.response?.data?.errorMessage || err.response?.data || err.message || 'Submission process broken'
@@ -254,7 +275,7 @@ function Problem() {
       setActiveLeftTab('Submissions')
     }
   }
-  useEffect(() => {  // All submissions made till now by same user for same problem fetch all 
+  useEffect(() => {  
     fetchSubmissionHistory()
   }, [problemId])
 
@@ -319,7 +340,7 @@ function Problem() {
         {problemData && (
           <>
 
-            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 h-full">
+            <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-5 pb-20 space-y-4">
               {activeLeftTab === "description" && (
                 <Description problem={problemData} />
               )}
@@ -332,7 +353,7 @@ function Problem() {
               )}
               {activeLeftTab === "ChatAi" && (
                 <ChatAi
-                  className="overflow-y-scroll"
+                  className="overflow-y-auto"
                   problem={problemData}
                   problemId={problemId}
                 />
@@ -341,15 +362,13 @@ function Problem() {
           </>
         )}
       </section>
-
-      {/* <section className="flex-[1.3] min-w-0 bg-[#2684bb] flex flex-col overflow-hidden"> */}
       <section className="flex-1 min-w-0 bg-[#121824] flex flex-col overflow-hidden border-l border-slate-800/80 h-full">
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06] bg-[#111111] flex-shrink-0">
           <div className="flex items-center gap-2">
             <select
               className="bg-[#1A1A1A] border border-white/10 rounded-lg text-xs text-slate-100 px-3 py-2 outline-none focus:border-[#EF4444]/60 focus:ring-0"
               value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
+              onChange={(e) => handleLanguageChange(e.target.value)}
             >
               <option value="javascript">JavaScript</option>
               <option value="java">Java</option>
@@ -389,7 +408,7 @@ function Problem() {
               type="button"
               onClick={() =>
                 runCode(
-                  code[selectedLanguage],
+                  editorValue,
                   selectedLanguage,
                   problemData?.driverCode,
                   getRunTestCases()
@@ -401,7 +420,7 @@ function Problem() {
             </button>
             <button
               type="button"
-              onClick={() => submitCode(code[selectedLanguage], selectedLanguage)}
+              onClick={() => submitCode(editorValue, selectedLanguage)}
               className="inline-flex items-center gap-1.5 text-xs px-4 py-1.5 rounded-lg bg-[#EF4444] text-white font-semibold hover:bg-[#DC2626] active:scale-95 transition-all"
             >
               Submit
@@ -413,14 +432,14 @@ function Problem() {
             <span className="font-medium text-slate-100">Session testcases active:</span> {sessionMessage}
           </div>
         )}
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           {activeRightTab === "code" && (
-            <div className="h-full w-full">
+            <div className="flex-1 min-h-0">
               <Editor
                 height="100%"
                 language={getLanguageForMonaco(selectedLanguage)}
                 onChange={handleEditorChange}
-                value={updatedCode[selectedLanguage]}
+                value={editorValue}
                 onMount={handleEditorDidMount}
                 theme="vs-dark"
                 options={{
@@ -455,9 +474,7 @@ function Problem() {
           )}
           {activeRightTab === "result" && (
             Object.keys(resultHistory).length !== 0 ? (
-              <div className="overflow-y-auto h-full w-full p-6 space-y-5 bg-[#0D0D0D] text-slate-200 scrollbar-thin select-text animate-in fade-in duration-200">
-
-                {/* HEADER WITH CORRECT COLOR-CODED STATUS BADGES */}
+              <div className="flex-1 min-h-0 overflow-y-auto w-full p-6 pb-20 space-y-5 bg-[#0D0D0D] text-slate-200 scrollbar-thin select-text animate-in fade-in duration-200">
                 <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                   <h3 className="text-xs font-bold text-white tracking-wide uppercase font-mono">Execution Feedback</h3>
                   <div>
@@ -471,8 +488,6 @@ function Problem() {
                     })()}
                   </div>
                 </div>
-
-                {/* METRIC HERO CONTAINER CARD */}
                 {(() => {
                   const s = String(resultHistory?.status || "").toLowerCase().trim();
                   let bgStyle = "bg-slate-900/40 border-slate-800 text-slate-400";
@@ -518,8 +533,6 @@ function Problem() {
                     <span className="text-sm font-bold text-slate-200">{resultHistory?.memory || "-- "}</span>
                   </div>
                 </div>
-
-                {/* HIDDEN LOG EXPANDERS FOR DETAILED WRONG MISMATECHES */}
                 {String(resultHistory?.status || "").toLowerCase().includes("wrong") && resultHistory?.failedTestCaseDetails && (
                   <div className="space-y-2 font-mono text-xs pt-2">
                     <div className="bg-[#141414] border border-slate-800 rounded-xl p-4 space-y-3 shadow-inner">
@@ -555,19 +568,14 @@ function Problem() {
             ))
           }
           {activeRightTab === "testrun" && testCaseResults && (
-            <div className="h-full w-full overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto pb-20">
               <TestCaseResults
-                // Run Code states
-                results={testCaseResults?.results} // Array of visible test cases from running
-
-                // Run summary states
+                results={testCaseResults?.results} 
                 status={testCaseResults?.status}
                 errorMessage={testCaseResults?.errorMessage}
                 runtime={testCaseResults?.runtime}
                 memory={testCaseResults?.memory}
                 failedTestCaseDetails={testCaseResults?.failedTestCaseDetails}
-
-                // Totals
                 totalTestCases={testCaseResults?.testCasesTotal}
               />
             </div>
@@ -576,7 +584,7 @@ function Problem() {
           {activeRightTab === "testcase" && problemData && (
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="h-full overflow-y-auto bg-[#0D0D0D] px-4 py-4 space-y-4"
+              className="flex-1 min-h-0 overflow-y-auto bg-[#0D0D0D] px-4 py-4 pb-20 space-y-4"
             >
               {visibleFields.map((field, i) => (
                 <div
