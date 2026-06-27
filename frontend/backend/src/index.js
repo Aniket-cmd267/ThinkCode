@@ -14,7 +14,7 @@ const contestRouter = require("./routes/contest");
 const { Server } = require("socket.io");
 const { registerContestSocket } = require("./sockets/contestSocket");
 const interviewRoutes= require('./routes/interviewRoutes')
-const videoRoutes = require('./routes/video')
+// const videoRoutes = require('./routes/video')
 
 const profileUploadRoute=  require("./routes/profile")
 
@@ -41,7 +41,7 @@ app.use('/ai',chatAiRouter)
 app.use('/contest',contestRouter)
 app.use('/interview',interviewRoutes)
 app.use('/profile',profileUploadRoute);
-app.use('/video', videoRoutes);
+// app.use('/video', videoRoutes);
 
 registerContestSocket(io);
 const InitalizeConnection = async ()=>{
